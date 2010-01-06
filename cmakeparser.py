@@ -81,7 +81,7 @@ class CMakeParser():
 	## Strings of sub-regexes to compile later - all are re.VERBOSE
 
 	## all the functions that permit parens in their args
-	_parenArgFuncs = (r"(?ix)" # case-insensitive and verbose
+	_reParenArgFuncs = (r"(?ix)" # case-insensitive and verbose
 		+ "(?P<parenArgFunc>"
 		+ "|".join(
 			"""
@@ -98,30 +98,44 @@ class CMakeParser():
 		+ r")")
 
 	## A possible function name
-	_funcName = r"(?x)(?P<funcName> [\w\d]+)"
+	_reFuncName = r"(?x) \s* (?P<FuncName> [\w\d]+) \s*"
 
 	## Extremely general "non-empty arguments," no leading or trailing whitespc
-	_args = r"(?x)(?P<args> (?\S(?\S|\s\S)* )?"
+	_reArgs = r"(?x) \s* (?P<Args> (\S (\S|\s\S)* )?) \s*"
 
 	## Standard command args: no parens
-	_argsStd = r"(?x)(?P<argsStd> (?[\S-(?\S|\s\S)* )?"
+	#_reArgsStd = r"(?x) \s* (?P<ArgsStd> ([\S-\(\)]([\S-\(\)]|\s[\S-\(\)])* )?) \s*"
 
 	## A comment: everything after # as long as it's not preceded by a \
-	_comment = r"""(?x)(?P<comment> (?<!\\)\#.*$"""
+	# the ?<! is a "negative backward assertion handling "not after a \"
+	_reComment = r"(?x)\s* (?P<Comment> (?<!\\)\#\S*) \s$"
 
 	## The start of a command, up until the arguments
-	_commandStart = r"\s*" + _funcName + r"\s*\("
+	_reCommandStart = _reFuncName + r"\("
 
 	## The end of a command
-	_commandEnd = r"\)"
+	_reCommandEnd = r"\s*\)"
+
+	## A full (complete) line
+	_reFullLine = ( r"^(?P<FullLine>\s*"	# start the full line bool group
+				+ r"("			# start optional func call group
+				+ _reCommandStart
+				+ _reArgs
+				+ _reCommandEnd
+				+ r")?"			# end optional func call group
+				+ r"("			# start optional comment group
+				+ _reComment
+				+ r")?" 		# end optional comment group
+				+ r")?")		# end the full line bool group
 	##
 	####
 
 	## Regex matching all the functions that permit parens in their args
-	reParenArgFuncs = re.compile("^" + _parenArgFuncs + "$",
-		re.IGNORECASE | re.VERBOSE)
+	#reParenArgFuncs = re.compile("^" + _parenArgFuncs + "$",
+	#	re.IGNORECASE | re.VERBOSE)
 
-	## Regex matching the beginning of a command
+	## Regex matching a full line
+	reFullLine = re.compile(_reFullLine, re.IGNORECASE | re.VERBOSE)
 
 
 
@@ -136,18 +150,21 @@ class CMakeParser():
 #									$
 #									""", re.VERBOSE)
 
-	## A tuple containing all functions that start a block
-	_blockBeginnings ="""	foreach
+	## All functions that start a block
+	_blockBeginnings = """	foreach
 							function
 							if
 							elseif
 							else
 							macro
 							while	""".split()
+	_reBlockBeginnings = (r"(?ix)" +		# case-insensitive and verbose
+							r"(?P<BlockBeginnings>" +
+							"|".join(_blockBeginnings) +
+							r")")
 
 	## A compiled regex that matches exactly the functions that start a block
-	reBlockBeginnings = re.compile(r"^(" + "|".join(_blockBeginnings) + r")$",
-		re.IGNORECASE)
+	reBlockBeginnings = re.compile(_reBlockBeginnings, re.IGNORECASE)
 
 	## A dictionary where blockEndings[blockBeginFunc]=(blockEndFunc1,...),
 	## all datatypes are strings.  Size is one more than blockBeginnings
@@ -170,17 +187,20 @@ class CMakeParser():
 	# Catch any "developer failed to add new function to both lists" bugs
 	assert len(_blockEndings) - 1 == len(_blockBeginnings)
 
-	## A big list comprehension that makes a dictionary with pairs (start, end)
-	## where start is a start tag string from blockEndings and end is a
+	## A big list comprehension that makes a dictionary with pairs (key, end)
+	## where key is a start tag key from blockEndings and end is a
 	## compiled regex that only exactly matches any corresponding ending
-	reBlockEndings = dict([  # Make a dict from list comprehension of pairs
+	dReBlockEndings = dict([  # Make a dict from list comprehension of pairs
 		# the dictionary key is just the start tag
 		( beginning,
 		# the value is a compiled regex matching any of the end tags
-		re.compile(r"^(" + "|".join(ends) + r")$", re.IGNORECASE) )
+		re.compile(	r"(?ix)" + # case insensitive
+					r"^(?P<BlockEnding>" +
+					r"|".join(ends) +
+					r")$", re.IGNORECASE) )
 
 		# for every key-value pair in the non-compiled dictionary
 		for beginning, ends in _blockEndings.iteritems() ])
 
 	# sanity check the comprehension above
-	assert len(_blockEndings) == len(reBlockEndings)
+	assert len(_blockEndings) == len(dReBlockEndings)
