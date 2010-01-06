@@ -15,6 +15,12 @@ def parse_string(instr):
 	parser.parse()
 	return parser
 
+def parse_file(filename):
+	cmakefile = open(filename, 'r')
+	instr = cmakefile.read()
+	cmakefile.close()
+	return parse_string(instr)
+
 class ParseInput():
 	def __init__(self, strdata):
 		self.input = strdata.splitlines()
