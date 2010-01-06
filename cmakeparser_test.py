@@ -9,14 +9,25 @@ Iowa State University HCI Graduate Program/VRAC
 """
 
 import unittest
-
 import cmakeparser
 
 ## Requirement:
 ## A given source file has only valid one parse
 class KnownValues(unittest.TestCase):
-	knownValues = (
-	def __init__(self)
+	def setUp(self):
+		import glob
+		cmakes = glob.glob('./testdata/KnownValues/*.cmake')
+		cmakes.sort()
+		parses = glob.glob('./testdata/KnownValues/*.parse')
+		parses.sort()
+		self.cases = []
+		for cmakefn, parsefn in zip(cmakes, parses):
+			
+			
+	def testToKnownParses(self):
+		pass
+	def testToKnownParsesWhitespace(self):
+		pass
 
 ## Requirement:
 ## Parsing invalid source trees should fail

@@ -8,6 +8,4 @@ http://academic.cleardefinition.com
 Iowa State University HCI Graduate Program/VRAC
 """
 
-if __name__=="__main__":
-	## Run tests if executed directly
-	pass
+
