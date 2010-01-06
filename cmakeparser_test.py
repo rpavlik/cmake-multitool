@@ -106,6 +106,8 @@ class KnownValues(unittest.TestCase):
 		parses = glob.glob('./testdata/KnownValues/*.parse')
 		parses.sort()
 
+		assert len(parses) == len(cmakes)
+
 		self.strings = []
 		self.files = []
 		self.uppers = []

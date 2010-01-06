@@ -68,7 +68,7 @@ class CMakeParser():
 		self.parsetree = []
 
 	def parse(self):
-		parsetree = self.parse_block_children(None)
+		self.parsetree = self.parse_block_children(None)
 
 	def parse_block_children(self, startTag):
 		if startTag is None:
@@ -76,7 +76,7 @@ class CMakeParser():
 			isEnder = lambda x: (x is None)
 		elif self.reBlockBeginnings.match(startTag):
 			# can have children
-			endblock = self.reBlockEndings[startTag]
+			endblock = self.dReBlockEndings[startTag.lower()]
 			isEnder = endblock.match
 		else:
 			# Can have no children
@@ -92,6 +92,7 @@ class CMakeParser():
 			self.input.accept()
 			block.append( ( func, args, comment, self.parse_block_children(func)) )
 
+		return block
 
 
 
