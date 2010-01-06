@@ -46,21 +46,17 @@ class ParseCompleteLine(unittest.TestCase):
 	mixed = (	("func() # cmnt",	("func", None, "# cmnt")),
 				(r"func(\#notcmnt) #iscmnt",("func", r"\#notcmnt", "#iscmnt"))	)
 
-	suffix = ""
-
-	def shortDescription(self):
-		default = unittest.TestCase.shortDescription(self)
-		if default is None:
-			default = ""
-		else:
-			default = default + "\n"
-		return default + self.suffix
+	subtest = ""
+	def _exc_info(self):
+		print "Subtest info:"
+		print self.subtest
+		return unittest.TestCase._exc_info(self)
 
 	def testParseLineCommand(self):
 		"""parse_line on a line with a command only"""
 		parser = cmakeparser.CMakeParser(cmakeparser.ParseInput(""))
 		for (line, expected) in self.commandsOnly:
-			self.suffix = "When running with the following input:\n" + line
+			self.subtest = line
 			func, args, comment, hasFullLine = parser.parse_line(line)
 
 			self.assertTrue(hasFullLine)
@@ -71,7 +67,7 @@ class ParseCompleteLine(unittest.TestCase):
 		"""parse_line on a line with a comment only"""
 		parser = cmakeparser.CMakeParser( cmakeparser.ParseInput("") )
 		for commentstring in self.commentsOnly:
-			self.suffix = "When running with the following input:\n" + commentstring
+			self.subtest = commentstring
 			func, args, comment, hasFullLine = parser.parse_line(commentstring)
 
 			self.assertTrue(hasFullLine)
@@ -82,7 +78,7 @@ class ParseCompleteLine(unittest.TestCase):
 		"""parse_line on a line with both a command and a comment"""
 		parser = cmakeparser.CMakeParser( cmakeparser.ParseInput("") )
 		for (line, expected) in self.mixed:
-			self.suffix = "When running with the following input:\n" + line
+			self.subtest = line
 			func, args, comment, hasFullLine = parser.parse_line(line)
 
 			self.assertTrue(hasFullLine)
@@ -133,40 +129,37 @@ class KnownValues(unittest.TestCase):
 			self.uppers.append( (cmakestr.upper(), parseupper) )
 			self.lowers.append( (cmakestr.lower(), parselower) )
 
-	suffix = ""
-	def shortDescription(self):
-		default = unittest.TestCase.shortDescription(self)
-		if default is None:
-			default = ""
-		else:
-			default = default + "\n"
-		return default + self.suffix
+	subtest = ""
+	def _exc_info(self):
+		print "Subtest info:"
+		print self.subtest
+		return unittest.TestCase._exc_info(self)
 
 	def testFullParseKnownString(self):
 		"""passing in a known-good string to the full parser"""
 		for instring, expected in self.strings:
-			self.suffix = "When running with the following input:\n" + instring
+			self.subtest = instring
 			out = cmakeparser.parse_string(instring)
 			self.assertEqual(out.parsetree, expected)
 
 	def testFullParseKnownFile(self):
 		"""passing in a known-good input filename to the full parser"""
 		for cmakefn, expected in self.files:
-			self.suffix = "When running with the following input file:\n" + cmakefn
+			self.subtest = cmakefn
 			out = cmakeparser.parse_file(cmakefn)
 			self.assertEqual(out.parsetree, expected)
 
 	def testFullParseKnownUppercaseString(self):
 		"""passing in a known-good uppercased string to the full parser"""
 		for instring, expected in self.uppers:
-			self.suffix = "When running with the following input:\n" + instring
+			self.subtest = instring
 			out = cmakeparser.parse_string(instring)
 			self.assertEqual(out.parsetree, expected)
 
 	def testFullParseKnownLowercaseString(self):
 		"""passing in a known-good lowercased string to the full parser"""
 		for instring, expected in self.lowers:
-			self.suffix = "When running with the following input:\n" + instring
+			self.subtest = instring
 			out = cmakeparser.parse_string(instring)
 			self.assertEqual(out.parsetree, expected)
 
