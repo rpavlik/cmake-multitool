@@ -70,19 +70,20 @@ class CMakeParser():
 			func, args, comment, complete = self.parse_line(line)
 
 	def parse_line(self, line):
-		m = self.reFullLine.match(line)
-		func, args, comment, fullLine = m.group("FuncName",
-											"Args", # todo change to argsCareful
-											"Comment",
-											"FullLine")
+		if line is not None:
+			m = self.reFullLine.match(line)
+			func, args, comment, fullLine = m.group("FuncName",
+												"Args", # todo change to argsCareful
+												"Comment",
+												"FullLine")
 
-		hasFullLine = (fullLine is not None)
-		if func is None:
-			func = ""
-		#if args is None:
-		#	args = ""
-		#if comment is None:
-		#	comment = ""
+			hasFullLine = (fullLine is not None)
+			if func is None:
+				func = ""
+
+			# TODO this is a suboptimal workaround!
+			if args == "":
+				args = None
 
 		return (func, args, comment, hasFullLine)
 
@@ -110,7 +111,7 @@ class CMakeParser():
 	_reFuncName = r"(?x) \s* (?P<FuncName> [\w\d]+) \s*"
 
 	## Extremely general "non-empty arguments," no leading or trailing whitespc
-	_reArgs = r"(?x) \s* (?P<Args> (\S (\S|\s\S)* )?) \s*"
+	_reArgs = r"(?x) \s* (?P<Args> (\S ((\s)*\S)*)?) \s*"
 
 	## Standard command args: no parens
 	#_reArgsStd = r"(?x) \s* (?P<ArgsStd> ([\S-\(\)]([\S-\(\)]|\s[\S-\(\)])* )?) \s*"
@@ -118,7 +119,7 @@ class CMakeParser():
 	## A comment: everything after # as long as it's not preceded by a \
 	# the ?<! is a "negative backward assertion handling "not after a \"
 	# (?<!\\)
-	_reComment = r"(?x)\s* (?P<Comment> \#\S*) \s$"
+	_reComment = r"(?x) \s* (?P<Comment> (?<!\\)\#.*)"
 
 	## The start of a command, up until the arguments
 	_reCommandStart = _reFuncName + r"\("
@@ -146,19 +147,6 @@ class CMakeParser():
 
 	## Regex matching a full line
 	reFullLine = re.compile(_reFullLine, re.IGNORECASE | re.VERBOSE)
-
-
-
-#	reCommandStart = re.compile(r"""^\s*
-#									(?			# start optional command group
-#										# function name
-#									\s*
-#									\(					# open paren
-#									\s*
-#
-#									)?			# end optional command group
-#									$
-#									""", re.VERBOSE)
 
 	## All functions that start a block
 	_blockBeginnings = """	foreach
