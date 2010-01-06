@@ -10,6 +10,11 @@ Iowa State University HCI Graduate Program/VRAC
 
 import re
 
+def parse_string(instr):
+	parser = CMakeParser(ParseInput(instr))
+	parser.parse()
+	return parser
+
 class ParseInput():
 	def __init__(self, strdata):
 		self.input = strdata.splitlines()
@@ -50,24 +55,105 @@ class ParseInput():
 		self.gotline = False
 
 class CMakeParser():
+	# There are all the important regexes at the bottom of the class
+
+	def __init__(self, parseinput):
+		self.input = parseinput
+		self.parsetree = []
+
+	def parse(self):
+		pass
+
+	def parse_block_children(self, startTag):
+		endblock = self.reBlockEndings[startTag]
+		for line in self.input:
+			func, args, comment, complete = self.parse_line(line)
+
+	def parse_line(self, line):
+		m = self.reFullLine.match(line)
+		valid, func, args, comment = m.group("fullLine",
+											"funcName",
+											"args", # todo change to argsCareful
+											"comment")
+		return (func, args, comment, (valid is not None))
+
+	####
+	## Strings of sub-regexes to compile later - all are re.VERBOSE
+
+	## all the functions that permit parens in their args
+	_parenArgFuncs = (r"(?ix)" # case-insensitive and verbose
+		+ "(?P<parenArgFunc>"
+		+ "|".join(
+			"""
+			if
+			else
+			elseif
+			endif
+
+			while
+			endwhile
+
+			math
+			""".split())
+		+ r")")
+
+	## A possible function name
+	_funcName = r"(?x)(?P<funcName> [\w\d]+)"
+
+	## Extremely general "non-empty arguments," no leading or trailing whitespc
+	_args = r"(?x)(?P<args> (?\S(?\S|\s\S)* )?"
+
+	## Standard command args: no parens
+	_argsStd = r"(?x)(?P<argsStd> (?[\S-(?\S|\s\S)* )?"
+
+	## A comment: everything after # as long as it's not preceded by a \
+	_comment = r"""(?x)(?P<comment> (?<!\\)\#.*$"""
+
+	## The start of a command, up until the arguments
+	_commandStart = r"\s*" + _funcName + r"\s*\("
+
+	## The end of a command
+	_commandEnd = r"\)"
+	##
+	####
+
+	## Regex matching all the functions that permit parens in their args
+	reParenArgFuncs = re.compile("^" + _parenArgFuncs + "$",
+		re.IGNORECASE | re.VERBOSE)
+
+	## Regex matching the beginning of a command
+
+
+
+#	reCommandStart = re.compile(r"""^\s*
+#									(?			# start optional command group
+#										# function name
+#									\s*
+#									\(					# open paren
+#									\s*
+#
+#									)?			# end optional command group
+#									$
+#									""", re.VERBOSE)
+
 	## A tuple containing all functions that start a block
-	blockBeginnings = ('foreach',
-					'function',
-					'if',
-					'elseif',
-					'else',
-					'macro',
-					'while')
+	_blockBeginnings ="""	foreach
+							function
+							if
+							elseif
+							else
+							macro
+							while	""".split()
 
 	## A compiled regex that matches exactly the functions that start a block
-	reBlockBeginnings = re.compile(r"^(" + "|".join(blockBeginnings) + r")$",
+	reBlockBeginnings = re.compile(r"^(" + "|".join(_blockBeginnings) + r")$",
 		re.IGNORECASE)
 
 	## A dictionary where blockEndings[blockBeginFunc]=(blockEndFunc1,...),
 	## all datatypes are strings.  Size is one more than blockBeginnings
 	## because we match the empty string opening function (dummy for start
 	## of file) with a dummy EOF string as an end tag
-	blockEndings = {'' : ('_CMAKE_PARSER_EOF_FLAG_',),
+	_blockEndings = {'' : ('_CMAKE_PARSER_EOF_FLAG_',),
 
 					'foreach'	: ('endforeach',),
 
@@ -82,7 +168,7 @@ class CMakeParser():
 					'while'	: ('endwhile',)}
 
 	# Catch any "developer failed to add new function to both lists" bugs
-	assert len(blockEndings) - 1 == len(blockBeginnings)
+	assert len(_blockEndings) - 1 == len(_blockBeginnings)
 
 	## A big list comprehension that makes a dictionary with pairs (start, end)
 	## where start is a start tag string from blockEndings and end is a
@@ -94,24 +180,7 @@ class CMakeParser():
 		re.compile(r"^(" + "|".join(ends) + r")$", re.IGNORECASE) )
 
 		# for every key-value pair in the non-compiled dictionary
-		for beginning, ends in blockEndings.iteritems() ])
+		for beginning, ends in _blockEndings.iteritems() ])
 
 	# sanity check the comprehension above
-	assert len(blockEndings) == len(reBlockEndings)
-
-	def __init__(self, parseinput):
-		self.input = parseinput
-		self.parsetree = []
-
-	def parse(self):
-		pass
-
-	def parse_block_children(self, startTag):
-		endblock = self.reBlockEndings[startTag]
-		for line in self.input:
-			func, args, comment = self.parse_line(line)
-
-def parse_string(instr):
-	parser = CMakeParser(ParseInput(instr))
-	parser.parse()
-	return parser
+	assert len(_blockEndings) == len(reBlockEndings)
