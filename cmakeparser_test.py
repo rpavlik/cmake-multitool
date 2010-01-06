@@ -121,8 +121,8 @@ class KnownValues(unittest.TestCase):
 			parsef.close()
 
 			parsedata = eval(parsestr)
-			parseupper = eval(parsestr.upper())
-			parselower = eval(parsestr.lower())
+			parseupper = eval("None".join([x.upper() for x in parsestr.split("None")]))
+			parselower = eval("None".join([x.lower() for x in parsestr.split("None")]))
 
 			self.strings.append( (cmakestr, parsedata) )
 			self.files.append( (cmakefn, parsedata) )

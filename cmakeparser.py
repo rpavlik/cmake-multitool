@@ -23,8 +23,8 @@ def parse_file(filename):
 
 class ParseInput():
 	def __init__(self, strdata):
-		self.input = strdata.splitlines()
-		self.lineindex = 0
+		self._data = strdata.splitlines()
+		self._lineindex = 0
 		self.alldone = False
 		self.gotline = False
 
@@ -37,28 +37,28 @@ class ParseInput():
 		We don't go to the next line unless we've been accepted."""
 
 		# Will always hit this condition if all works well
-		if self.lineindex == len(self.lineindex):
-			self.alldone = true
+		if self._lineindex == len(self._data):
+			self.alldone = True
 			raise StopIteration
 
 		# If we break, break big
-		assert self.lineindex < len(self.lineindex)
+		assert self._lineindex < len(self._data)
 
 		# OK, we can actually return the data now
-		self.gotline = true
-		return self.input[self.lineindex]
-
-	def line(self):
-		"""A more intuitive alias for next() - get the current line"""
-		return self.next()
+		self.gotline = True
+		return self._data[self._lineindex]
 
 	def accept(self):
 		"""Signal that we've processed this line and should go to the next"""
 
 		# We shouldn't accept a line we haven't even seen
-		assert self.gotline == true
-		self.lineindex = self.lineindex + 1
+		assert self.gotline
+
+		self._lineindex = self._lineindex + 1
 		self.gotline = False
+
+	# """A more intuitive alias for next() - get the current line"""
+	line = next
 
 class CMakeParser():
 	# There are all the important regexes at the bottom of the class
@@ -68,12 +68,32 @@ class CMakeParser():
 		self.parsetree = []
 
 	def parse(self):
-		pass
+		parsetree = self.parse_block_children(None)
 
 	def parse_block_children(self, startTag):
-		endblock = self.reBlockEndings[startTag]
+		if startTag is None:
+			# the block is the entire file.
+			isEnder = lambda x: (x is None)
+		elif self.reBlockBeginnings.match(startTag):
+			# can have children
+			endblock = self.reBlockEndings[startTag]
+			isEnder = endblock.match
+		else:
+			# Can have no children
+			return None
+
+		block = []
 		for line in self.input:
 			func, args, comment, complete = self.parse_line(line)
+			assert complete
+			if isEnder(func):
+				break
+			# Not an ender, so we accept this child.
+			self.input.accept()
+			block.append( ( func, args, comment, self.parse_block_children(func)) )
+
+
+
 
 	def parse_line(self, line):
 		if line is not None:

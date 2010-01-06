@@ -1,1 +1,1 @@
-[('if(WIN32)', [('target_link_libraries(myapp somelib)',)]), ('elseif(UNIX)', [('target_link_library(myapp awesomelib)',)]), ('else()', [('target_link_libraries(myapp otherlib)',)]), ('endif()',)]
+[('if', 'WIN32', None, [('target_link_libraries', 'myapp somelib', None, None)]), ('elseif', 'UNIX', None, [('target_link_library', 'myapp awesomelib', None, None)]), ('else', None, None, [('target_link_libraries', 'myapp otherlib', None, None)]), ('endif', None, None, None)]
