@@ -71,11 +71,20 @@ class CMakeParser():
 
 	def parse_line(self, line):
 		m = self.reFullLine.match(line)
-		valid, func, args, comment = m.group("fullLine",
-											"funcName",
-											"args", # todo change to argsCareful
-											"comment")
-		return (func, args, comment, (valid is not None))
+		func, args, comment, fullLine = m.group("FuncName",
+											"Args", # todo change to argsCareful
+											"Comment",
+											"FullLine")
+
+		hasFullLine = (fullLine is not None)
+		if func is None:
+			func = ""
+		if args is None:
+			args = ""
+		if comment is None:
+			comment = ""
+
+		return (func, args, comment, hasFullLine)
 
 	####
 	## Strings of sub-regexes to compile later - all are re.VERBOSE
@@ -201,6 +210,10 @@ class CMakeParser():
 
 		# for every key-value pair in the non-compiled dictionary
 		for beginning, ends in _blockEndings.iteritems() ])
+	# end of huge list comprehension
 
 	# sanity check the comprehension above
 	assert len(_blockEndings) == len(dReBlockEndings)
+
+#if __name__ == "__main__":
+#	pass

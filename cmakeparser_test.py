@@ -9,7 +9,20 @@ Iowa State University HCI Graduate Program/VRAC
 """
 
 import unittest
+import re
+
 import cmakeparser
+
+## Requirement:
+## All regexes must be able to be compiled
+class AllRegexesCompilable(unittest.TestCase):
+	def testCompileRegexes(self):
+		reKeys = 0
+		regexStrings = filter(lambda (x, y): re.match("(_re)", x),
+				cmakeparser.CMakeParser.__dict__.iteritems())
+		for (varName, reStr) in regexStrings:
+			re.compile(reStr)
+
 
 ## Requirement:
 ## Be able to parse a valid cmake command input line.
@@ -22,8 +35,9 @@ class ParseCompleteLine(unittest.TestCase):
 	def testParseLine(self):
 		parser = cmakeparser.CMakeParser(cmakeparser.ParseInput(""))
 		for (line, expected) in self.data:
-			actual = parser.parse_line(line)
-			self.assertEqual(actual, expected)
+			func, args, comment, hasFullLine = parser.parse_line(line)
+			self.assertTrue(hasFullLine)
+			self.assertEqual((func, args, comment), expected)
 
 ## Requirement:
 ## Be able to parse a comment line
@@ -81,4 +95,8 @@ class KnownValues(unittest.TestCase):
 ## Parsing invalid source trees should fail
 if __name__=="__main__":
 	## Run tests if executed directly
+	regexStrings = filter(lambda (x, y): re.match("(_re)", x),
+				cmakeparser.CMakeParser.__dict__.iteritems())
+	for (varName, reStr) in regexStrings:
+		print str(reStr)
 	pass
