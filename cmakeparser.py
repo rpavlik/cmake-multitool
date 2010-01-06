@@ -79,10 +79,10 @@ class CMakeParser():
 		hasFullLine = (fullLine is not None)
 		if func is None:
 			func = ""
-		if args is None:
-			args = ""
-		if comment is None:
-			comment = ""
+		#if args is None:
+		#	args = ""
+		#if comment is None:
+		#	comment = ""
 
 		return (func, args, comment, hasFullLine)
 
@@ -117,7 +117,8 @@ class CMakeParser():
 
 	## A comment: everything after # as long as it's not preceded by a \
 	# the ?<! is a "negative backward assertion handling "not after a \"
-	_reComment = r"(?x)\s* (?P<Comment> (?<!\\)\#\S*) \s$"
+	# (?<!\\)
+	_reComment = r"(?x)\s* (?P<Comment> \#\S*) \s$"
 
 	## The start of a command, up until the arguments
 	_reCommandStart = _reFuncName + r"\("
