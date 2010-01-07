@@ -26,14 +26,8 @@ class AllRegexesCompilable(unittest.TestCase):
 
 
 ## Requirement:
-## Accept possible command names
-class REAcceptCommandNames(unittest.TestCase):
-	data = (	"func",
-				"FuNc",
-				"FUNC",
-				"the_func",
-				"the_1_FUNC"	)
-
+## Accept only possible command names
+class AcceptRejectReFuncNames(unittest.TestCase):
 
 	subtest = ""
 	def _exc_info(self):
@@ -41,13 +35,36 @@ class REAcceptCommandNames(unittest.TestCase):
 		print self.subtest
 		return unittest.TestCase._exc_info(self)
 
-	def testAcceptValidCommandNames(self):
-		"""test the command name regex with just command names"""
-		for line in self.data:
+	def testAcceptValidFunctionNames(self):
+		"""test the function name regex with just valid function names"""
+		data = (	"func",
+				"FuNc",
+				"FUNC",
+				"the_func",
+				"the_1_FUNC"	)
+		for line in data:
 			self.subtest = line
 			self.assertTrue(re.match(cmakegrammar._reFuncName + "$", line))
 
+	def testRejectInvalidFunctionNames(self):
+		"""test the function name regex with just invalid function names"""
+		data = (	"func(",
+				"FuNc{",
+				"FUNC-",
+				"the_func!",
+				"the_1_FUNC\""	)
+		for line in data:
+			self.subtest = line
+			self.assertFalse(re.match(cmakegrammar._reFuncName + "$", line))
 
+	def testExtractFunctionNames(self):
+		"""extracting valid function names using regex"""
+		data = (	("func(", "func"),
+					(" FuNc ", "FuNc"),
+					("\tFUNC\n", "FUNC")	)
+		for line, expected in data:
+			self.subtest = line
+			self.assertTrue(re.match(cmakegrammar._reFuncName, line))
 
 ## Requirement:
 ## Be able to parse a valid cmake command input line.
