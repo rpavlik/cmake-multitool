@@ -47,7 +47,7 @@ class AcceptRejectReFuncNames(unittest.TestCase):
 		return unittest.TestCase._exc_info(self)
 
 	def testAcceptValidFunctionNames(self):
-		"""test the function name regex with just valid function names"""
+		"""reFuncName: accept just valid function names"""
 		data = (	"func",
 				"FuNc",
 				"FUNC",
@@ -55,28 +55,32 @@ class AcceptRejectReFuncNames(unittest.TestCase):
 				"the_1_FUNC"	)
 		for line in data:
 			self.subtest = line
-			self.assertTrue(re.search(cmakegrammar._reFuncName + "$", line))
+			self.assertTrue(re.search("^" + cmakegrammar._reFuncName + "$", line).group())
 
 	def testRejectInvalidFunctionNames(self):
-		"""test the function name regex with just invalid function names"""
+		"""reFuncName: reject just invalid function names"""
 		data = (	"func(",
 					"FuNc{",
 					"FUNC-",
+					"FUNC ",
 					"the_func!",
 					"the_1_FUNC\"",
 					"#comment"	)
 		for line in data:
 			self.subtest = line
-			self.assertFalse(re.search(cmakegrammar._reFuncName + "$", line))
+			result = re.search("^" + cmakegrammar._reFuncName + "$", line)
+			if result is not None:
+				print result.groups()
+			self.assertEquals(re.search("^" + cmakegrammar._reFuncName + "$", line), None)
 
 	def testExtractFunctionNames(self):
-		"""extracting valid function names using regex"""
+		"""reFuncName: extract valid function names from surroundings"""
 		data = (	("func(", "func"),
 					(" FuNc ", "FuNc"),
 					("\tFUNC\n", "FUNC")	)
 		for line, expected in data:
 			self.subtest = line
-			self.assertTrue(re.search(cmakegrammar._reFuncName, line))
+			self.assertEquals(re.search(cmakegrammar._reFuncName, line).group("FuncName"), expected)
 
 ## Requirement:
 ## Accept only valid comments
@@ -89,7 +93,7 @@ class AcceptRejectReComment(unittest.TestCase):
 		return unittest.TestCase._exc_info(self)
 
 	def testAcceptValidComments(self):
-		"""test the function name regex with just valid comments"""
+		"""reComment: accept just valid comments"""
 		data = (	"#",
 					"#Comment",
 					"# Comment",
@@ -100,31 +104,22 @@ class AcceptRejectReComment(unittest.TestCase):
 			self.assertTrue(re.search("^" + cmakegrammar._reComment + "$", line))
 
 	def testRejectInvalidComments(self):
-		"""test the function name regex with just invalid comments"""
+		"""reComment: reject just invalid comments"""
 		data = (	"",
 					"func(",
 					"\#notacomment"	)
 		for line in data:
 			self.subtest = line
-			self.assertFalse(re.search("^" + cmakegrammar._reComment + "$", line))
+			self.assertEqual(re.search("^" + cmakegrammar._reComment + "$", line), None)
 
 	def testStripCommentWS(self):
-		"""ensure leading and trailing whitespace is stripped from comments"""
+		"""reComment: strip leading and trailing whitespacefrom comments"""
 		data = (	" # ",
 					" # not exact comment"	)
 		for line in data:
 			self.subtest = line
-			self.assertFalse(re.search("^" + cmakegrammar._reComment + "$", line))
-			self.assertEqual(re.search(cmakegrammar._reComment, line)["Comment"], line.trim())
+			self.assertEqual(re.search(cmakegrammar._reComment, line).group("Comment"), line.strip())
 
-	def testExtractFunctionNames(self):
-		"""extracting valid function names using regex"""
-		data = (	("func(", "func"),
-					(" FuNc ", "FuNc"),
-					("\tFUNC\n", "FUNC")	)
-		for line, expected in data:
-			self.subtest = line
-			self.assertEqual(re.search(cmakegrammar._reFuncName, line), expected)
 
 ## Requirement:
 ## Be able to parse a valid cmake command input line.
