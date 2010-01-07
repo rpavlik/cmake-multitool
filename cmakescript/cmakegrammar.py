@@ -78,7 +78,7 @@ _reArgs = r"(?x) (?P<Args> (\S ((\s)*\S)*)?)"
 ## A comment: everything after # as long as it's not preceded by a \
 # the ?<! is a "negative backward assertion handling "not after a \"
 # (?<!\\)
-_reComment = r"(?x) (?P<Comment> (?<!\\)\#.*)"
+_reComment = r"(?x) (?P<Comment> (?<!\\)\#(\s*\S+)*)"
 
 ## The start of a command, up until the arguments
 _reCommandStart = _reFuncName + r"\s* \("
