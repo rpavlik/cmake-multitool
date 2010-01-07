@@ -8,7 +8,17 @@ http://academic.cleardefinition.com
 Iowa State University HCI Graduate Program/VRAC
 """
 
+###
+# standard packages
 import re
+
+###
+# third-party packages
+# - none
+
+###
+# internal packages
+# - none
 
 def parse_string(instr):
 	parser = CMakeParser(ParseInput(instr))
@@ -22,6 +32,8 @@ def parse_file(filename):
 	return parse_string(instr)
 
 class ParseInput():
+	"""Class providing an iterable interface to the parser's input"""
+
 	def __init__(self, strdata):
 		self._data = strdata.splitlines()
 		self._lineindex = 0
@@ -61,7 +73,6 @@ class ParseInput():
 	line = next
 
 class CMakeParser():
-	# There are all the important regexes at the bottom of the class
 
 	def __init__(self, parseinput):
 		self.input = parseinput

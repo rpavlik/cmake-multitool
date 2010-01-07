@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Tests for parsing CMake source files
+Tests for the cmakescripts.cmakeparser module
 
 Original Author:
 2010 Ryan Pavlik <rpavlik@iastate.edu> <abiryan@ryand.net>
@@ -8,9 +8,17 @@ http://academic.cleardefinition.com
 Iowa State University HCI Graduate Program/VRAC
 """
 
+###
+# standard packages
 import unittest
 import re
 
+###
+# third-party packages
+# - none
+
+###
+# internal packages
 import cmakeparser
 
 ## Requirement:

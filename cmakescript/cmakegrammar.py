@@ -8,9 +8,22 @@ http://academic.cleardefinition.com
 Iowa State University HCI Graduate Program/VRAC
 """
 
+###
+# standard packages
 import re
 
-class IncompleteStatementError(Exception): pass
+###
+# third-party packages
+# - none
+
+###
+# internal packages
+# - none
+
+
+class IncompleteStatementError(Exception):
+	"""Exception raised by parse_line when not given a full valid statement"""
+	pass
 
 
 def parse_line(line):
@@ -59,7 +72,7 @@ _reFuncName = r"(?x) \s* (?P<FuncName> [\w\d]+) \s*"
 ## Extremely general "non-empty arguments," no leading or trailing whitespc
 _reArgs = r"(?x) \s* (?P<Args> (\S ((\s)*\S)*)?) \s*"
 
-## Standard command args: no parens
+## Standard command args: no parens permitted
 #_reArgsStd = r"(?x) \s* (?P<ArgsStd> ([\S-\(\)]([\S-\(\)]|\s[\S-\(\)])* )?) \s*"
 
 ## A comment: everything after # as long as it's not preceded by a \
@@ -150,5 +163,3 @@ dReBlockEndings = dict([  # Make a dict from list comprehension of pairs
 # sanity check the comprehension above
 assert len(_blockEndings) == len(dReBlockEndings)
 
-#if __name__ == "__main__":
-#	pass
