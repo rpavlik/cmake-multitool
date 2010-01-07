@@ -67,10 +67,10 @@ _reParenArgFuncs = (r"(?ix)" # case-insensitive and verbose
 	+ r")")
 
 ## A possible function name
-_reFuncName = r"(?x) \s* (?P<FuncName> [\w\d]+) \s*"
+_reFuncName = r"(?x) (?P<FuncName> [\w\d]+)"
 
 ## Extremely general "non-empty arguments," no leading or trailing whitespc
-_reArgs = r"(?x) \s* (?P<Args> (\S ((\s)*\S)*)?) \s*"
+_reArgs = r"(?x) (?P<Args> (\S ((\s)*\S)*)?)"
 
 ## Standard command args: no parens permitted
 #_reArgsStd = r"(?x) \s* (?P<ArgsStd> ([\S-\(\)]([\S-\(\)]|\s[\S-\(\)])* )?) \s*"
@@ -78,25 +78,28 @@ _reArgs = r"(?x) \s* (?P<Args> (\S ((\s)*\S)*)?) \s*"
 ## A comment: everything after # as long as it's not preceded by a \
 # the ?<! is a "negative backward assertion handling "not after a \"
 # (?<!\\)
-_reComment = r"(?x) \s* (?P<Comment> (?<!\\)\#.*)"
+_reComment = r"(?x) (?P<Comment> (?<!\\)\#.*)"
 
 ## The start of a command, up until the arguments
-_reCommandStart = _reFuncName + r"\("
+_reCommandStart = _reFuncName + r"\s* \("
 
 ## The end of a command
-_reCommandEnd = r"\s*\)"
+_reCommandEnd = r"\)"
 
 ## A full (complete) line
 _reFullLine = ( r"^(?P<FullLine>\s*"	# start the full line bool group
 			+ r"("			# start optional func call group
 			+ _reCommandStart
+			+ r"\s*"
 			+ _reArgs
+			+ r"\s*"
 			+ _reCommandEnd
 			+ r")?"			# end optional func call group
+			+ r"\s*"
 			+ r"("			# start optional comment group
 			+ _reComment
 			+ r")?" 		# end optional comment group
-			+ r")?")		# end the full line bool group
+			+ r")\s*")		# end the full line bool group
 ##
 ####
 
@@ -162,4 +165,3 @@ dReBlockEndings = dict([  # Make a dict from list comprehension of pairs
 
 # sanity check the comprehension above
 assert len(_blockEndings) == len(dReBlockEndings)
-
