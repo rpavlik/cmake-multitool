@@ -65,7 +65,7 @@ class CMakeParser():
 
 	def __init__(self, parseinput):
 		self.input = parseinput
-		self.parsetree = []
+		self.parsetree = None
 
 	def output_as_cmake(self):
 		return "\n".join(self.output_block(self.parsetree, 0))
@@ -106,6 +106,8 @@ class CMakeParser():
 
 	def parse(self):
 		self.parsetree = self.parse_block_children(None)
+		if self.parsetree is None:
+			self.parsetree = []
 
 	def parse_block_children(self, startTag):
 		if startTag is None:
