@@ -44,18 +44,19 @@ class AcceptRejectReFuncNames(unittest.TestCase):
 				"the_1_FUNC"	)
 		for line in data:
 			self.subtest = line
-			self.assertTrue(re.match(cmakegrammar._reFuncName + "$", line))
+			self.assertTrue(re.search(cmakegrammar._reFuncName + "$", line))
 
 	def testRejectInvalidFunctionNames(self):
 		"""test the function name regex with just invalid function names"""
 		data = (	"func(",
-				"FuNc{",
-				"FUNC-",
-				"the_func!",
-				"the_1_FUNC\""	)
+					"FuNc{",
+					"FUNC-",
+					"the_func!",
+					"the_1_FUNC\"",
+					"#comment"	)
 		for line in data:
 			self.subtest = line
-			self.assertFalse(re.match(cmakegrammar._reFuncName + "$", line))
+			self.assertFalse(re.search(cmakegrammar._reFuncName + "$", line))
 
 	def testExtractFunctionNames(self):
 		"""extracting valid function names using regex"""
@@ -64,7 +65,55 @@ class AcceptRejectReFuncNames(unittest.TestCase):
 					("\tFUNC\n", "FUNC")	)
 		for line, expected in data:
 			self.subtest = line
-			self.assertTrue(re.match(cmakegrammar._reFuncName, line))
+			self.assertTrue(re.search(cmakegrammar._reFuncName, line))
+
+## Requirement:
+## Accept only valid comments
+class AcceptRejectReComment(unittest.TestCase):
+
+	subtest = ""
+	def _exc_info(self):
+		print "Subtest info:"
+		print self.subtest
+		return unittest.TestCase._exc_info(self)
+
+	def testAcceptValidComments(self):
+		"""test the function name regex with just valid comments"""
+		data = (	"#",
+					"#Comment",
+					"# Comment",
+					"## Comment",
+					"###"	)
+		for line in data:
+			self.subtest = line
+			self.assertTrue(re.search("^" + cmakegrammar._reComment + "$", line))
+
+	def testRejectInvalidComments(self):
+		"""test the function name regex with just invalid comments"""
+		data = (	"",
+					"func(",
+					"\#notacomment"	)
+		for line in data:
+			self.subtest = line
+			self.assertFalse(re.search("^" + cmakegrammar._reComment + "$", line))
+
+	def testStripCommentWS(self):
+		"""ensure leading and trailing whitespace is stripped from comments"""
+		data = (	" # ",
+					" # not exact comment"	)
+		for line in data:
+			self.subtest = line
+			self.assertFalse(re.search("^" + cmakegrammar._reComment + "$", line))
+			self.assertEqual(re.search(cmakegrammar._reComment, line)["Comment"], line.trim())
+
+	def testExtractFunctionNames(self):
+		"""extracting valid function names using regex"""
+		data = (	("func(", "func"),
+					(" FuNc ", "FuNc"),
+					("\tFUNC\n", "FUNC")	)
+		for line, expected in data:
+			self.subtest = line
+			self.assertEqual(re.search(cmakegrammar._reFuncName, line), expected)
 
 ## Requirement:
 ## Be able to parse a valid cmake command input line.
@@ -97,9 +146,8 @@ class ParseCompleteLine(unittest.TestCase):
 		"""parse_line on a line with a command only"""
 		for (line, expected) in self.commandsOnly:
 			self.subtest = line
-			func, args, comment, hasFullLine = cmakegrammar.parse_line(line)
+			func, args, comment = cmakegrammar.parse_line(line)
 
-			self.assertTrue(hasFullLine)
 
 			self.assertEqual((func, args, comment), expected)
 
@@ -107,9 +155,7 @@ class ParseCompleteLine(unittest.TestCase):
 		"""parse_line on a line with a comment only"""
 		for commentstring in self.commentsOnly:
 			self.subtest = commentstring
-			func, args, comment, hasFullLine = cmakegrammar.parse_line(commentstring)
-
-			self.assertTrue(hasFullLine)
+			func, args, comment = cmakegrammar.parse_line(commentstring)
 
 			self.assertEqual((func, args, comment), ("", None, commentstring))
 
@@ -117,9 +163,7 @@ class ParseCompleteLine(unittest.TestCase):
 		"""parse_line on a line with both a command and a comment"""
 		for (line, expected) in self.mixed:
 			self.subtest = line
-			func, args, comment, hasFullLine = cmakegrammar.parse_line(line)
-
-			self.assertTrue(hasFullLine)
+			func, args, comment = cmakegrammar.parse_line(line)
 
 			self.assertEqual((func, args, comment), expected)
 
@@ -144,85 +188,8 @@ class ParsePartialLine(unittest.TestCase):
 		for line in self.data:
 			self.subtest = line
 			self.assertRaises(cmakegrammar.IncompleteStatementError,
-							  cmakegrammar.parse_line(line))
+							cmakegrammar.parse_line, line)
 
-
-### Requirement:
-### A given source file/string has only valid one parse
-#class KnownValues(unittest.TestCase):
-#	def setUp(self):
-#		import glob
-#		cmakes = glob.glob('./testdata/KnownValues/*.cmake')
-#		cmakes.sort()
-#		parses = glob.glob('./testdata/KnownValues/*.parse')
-#		parses.sort()
-#
-#		assert len(parses) == len(cmakes)
-#
-#		self.strings = []
-#		self.files = []
-#		self.uppers = []
-#		self.lowers = []
-#
-#		for cmakefn, parsefn in zip(cmakes, parses):
-#			cmakef = open(cmakefn, 'r')
-#			cmakestr = cmakef.read()
-#			cmakef.close()
-#
-#			parsef = open(parsefn, 'r')
-#			parsestr = parsef.read()
-#			parsef.close()
-#
-#			parsedata = eval(parsestr)
-#			parseupper = eval("None".join([x.upper() for x in parsestr.split("None")]))
-#			parselower = eval("None".join([x.lower() for x in parsestr.split("None")]))
-#
-#			self.strings.append( (cmakestr, parsedata) )
-#			self.files.append( (cmakefn, parsedata) )
-#			self.uppers.append( (cmakestr.upper(), parseupper) )
-#			self.lowers.append( (cmakestr.lower(), parselower) )
-#
-#	subtest = ""
-#	def _exc_info(self):
-#		print "Subtest info:"
-#		print self.subtest
-#		return unittest.TestCase._exc_info(self)
-#
-#	def testFullParseKnownString(self):
-#		"""passing in a known-good string to the full parser"""
-#		for instring, expected in self.strings:
-#			self.subtest = instring
-#			out = cmakeparser.parse_string(instring)
-#			self.assertEqual(out.parsetree, expected)
-#
-#	def testFullParseKnownFile(self):
-#		"""passing in a known-good input filename to the full parser"""
-#		for cmakefn, expected in self.files:
-#			self.subtest = cmakefn
-#			out = cmakeparser.parse_file(cmakefn)
-#			self.assertEqual(out.parsetree, expected)
-#
-#	def testFullParseKnownUppercaseString(self):
-#		"""passing in a known-good uppercased string to the full parser"""
-#		for instring, expected in self.uppers:
-#			self.subtest = instring
-#			out = cmakeparser.parse_string(instring)
-#			self.assertEqual(out.parsetree, expected)
-#
-#	def testFullParseKnownLowercaseString(self):
-#		"""passing in a known-good lowercased string to the full parser"""
-#		for instring, expected in self.lowers:
-#			self.subtest = instring
-#			out = cmakeparser.parse_string(instring)
-#			self.assertEqual(out.parsetree, expected)
-
-	## TODO
-	#def testToKnownParsesWhitespace(self):
-	#	pass
-
-## Requirement:
-## Parsing invalid source trees should fail
-# TODO
 
 if __name__=="__main__":
 	## Run tests if executed directly

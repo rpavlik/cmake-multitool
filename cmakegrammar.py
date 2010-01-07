@@ -10,6 +10,8 @@ Iowa State University HCI Graduate Program/VRAC
 
 import re
 
+class IncompleteStatementError(Exception): pass
+
 
 def parse_line(line):
 	if line is not None:
@@ -19,7 +21,9 @@ def parse_line(line):
 											"Comment",
 											"FullLine")
 
-		hasFullLine = (fullLine is not None)
+		if fullLine is None:
+			raise IncompleteStatementError
+
 		if func is None:
 			func = ""
 
@@ -27,7 +31,7 @@ def parse_line(line):
 		if args == "":
 			args = None
 
-	return (func, args, comment, hasFullLine)
+	return (func, args, comment)
 
 ####
 ## Strings of sub-regexes to compile later - all are re.VERBOSE
