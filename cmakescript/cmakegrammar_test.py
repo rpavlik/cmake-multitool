@@ -22,8 +22,6 @@ import re
 import cmakegrammar
 
 
-
-
 ## Requirement:
 ## All regexes must be able to be compiled
 class AllRegexesCompilable(unittest.TestCase):

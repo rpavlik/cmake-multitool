@@ -29,22 +29,17 @@ class IncompleteStatementError(Exception):
 def parse_line(line):
 	if line is not None:
 		m = reFullLine.match(line)
-		func, args, comment, fullLine = m.group("FuncName",
-											"Args", # todo change to argsCareful
-											"Comment",
-											"FullLine")
-
-		if fullLine is None:
+		if m is None:
 			raise IncompleteStatementError
 
-		if func is None:
-			func = ""
+		FuncName, Args, Comment = m.group("FuncName",
+											"Args", # todo change to argsCareful
+											"Comment")
 
-		# TODO this is a suboptimal workaround!
-		if args == "":
-			args = None
+		if FuncName is None:
+			FuncName = ""
 
-	return (func, args, comment)
+	return (FuncName, Args, Comment)
 
 ####
 ## Strings of sub-regexes to compile later - all are re.VERBOSE
@@ -70,7 +65,7 @@ _reParenArgFuncs = (r"(?ix)" # case-insensitive and verbose
 _reFuncName = r"(?x) (?P<FuncName> [\w\d]+)"
 
 ## Extremely general "non-empty arguments," no leading or trailing whitespc
-_reArgs = r"(?x) (?P<Args> (\S ((\s)*\S)*)?)"
+_reArgs = r"(?x) (?P<Args> (\S ((\s)*\S)*))"
 
 ## Standard command args: no parens permitted
 #_reArgsStd = r"(?x) \s* (?P<ArgsStd> ([\S-\(\)]([\S-\(\)]|\s[\S-\(\)])* )?) \s*"
@@ -87,11 +82,13 @@ _reCommandStart = _reFuncName + r"\s* \("
 _reCommandEnd = r"\)"
 
 ## A full (complete) line
-_reFullLine = ( r"^(?P<FullLine>\s*"	# start the full line bool group
+_reFullLine = ( r"^\s*(?P<FullLine>"	# start the full line bool group
 			+ r"("			# start optional func call group
 			+ _reCommandStart
 			+ r"\s*"
+			+ r"("			# start optional args group
 			+ _reArgs
+			+ r")?"			# end optional args group
 			+ r"\s*"
 			+ _reCommandEnd
 			+ r")?"			# end optional func call group
@@ -99,7 +96,7 @@ _reFullLine = ( r"^(?P<FullLine>\s*"	# start the full line bool group
 			+ r"("			# start optional comment group
 			+ _reComment
 			+ r")?" 		# end optional comment group
-			+ r")\s*")		# end the full line bool group
+			+ r")\s*$")		# end the full line bool group
 ##
 ####
 
