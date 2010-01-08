@@ -59,8 +59,8 @@ class KnownValues(unittest.TestCase):
 			self.lowers.append( (cmakestr.lower(), parselower) )
 
 
+	subtest = ""
 	if "nose" in dir():
-		subtest = ""
 		def _exc_info(self):
 			print "Subtest info:"
 			print self.subtest

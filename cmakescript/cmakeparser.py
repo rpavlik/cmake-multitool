@@ -22,6 +22,9 @@ import cmakegrammar
 
 grammar = cmakegrammar
 
+class UnclosedChildBlockError(Exception):
+	pass
+
 def parse_string(instr):
 	parser = CMakeParser(ParseInput(instr))
 	parser.parse()
@@ -87,8 +90,8 @@ class CMakeParser():
 
 	def parse_block_children(self, startTag):
 		if startTag is None:
-			# the block is the entire file.
-			isEnder = lambda x: (x is None)
+			# the block is the entire file - so no line is an ender.
+			isEnder = lambda x: (False)
 		elif grammar.reBlockBeginnings.match(startTag):
 			# can have children
 			endblock = grammar.dReBlockEndings[startTag.lower()]
@@ -101,14 +104,20 @@ class CMakeParser():
 		for line in self.input:
 			# TODO try-except IncompleteStatementError here
 			func, args, comment = grammar.parse_line(line)
+
 			if isEnder(func):
 				return block
+
 			# Not an ender, so we accept this child.
 			self.input.accept()
 			children = self.parse_block_children(func)
 			statement = ( func, args, comment, children)
 			block.append( statement )
 
+		if startTag is not None:
+			raise UnclosedChildBlockError
+
+		return block
 
 
 #if __name__ == "__main__":

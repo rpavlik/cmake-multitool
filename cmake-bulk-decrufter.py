@@ -152,12 +152,10 @@ if __name__ == "__main__":
 
 
 	for infile in inputfiles:
-		#print "------------------------"
-
+		print "------------------------"
 		print infile
-
-		#parser = cmakescript.parse_file(infile)
-		#formatter = cmakescript.CMakeFormatter(parser.parsetree)
-		#output = formatter.output_as_cmake()
-		#print
-		#print output
+		print "------------------------"
+		parser = cmakescript.parse_file(infile)
+		formatter = cmakescript.CMakeFormatter(parser.parsetree)
+		output = formatter.output_as_cmake()
+		print output
