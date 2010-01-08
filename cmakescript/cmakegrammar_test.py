@@ -201,6 +201,8 @@ if __name__=="__main__":
 	## Run tests if executed directly
 	try:
 		import nose
-		nose.main()
+		start = nose.main
 	except (ImportError):
-		unittest.main()
+		start = unittest.main
+
+	start()

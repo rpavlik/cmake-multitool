@@ -24,6 +24,21 @@ import glob
 import cmakeparser
 import cmakegrammar
 
+
+# format for each:
+# key is the filename - extension
+# value is whatever the variable name suggests
+inputfiles = dict()
+inputstrings = dict()
+inputuppers = dict()
+inputlowers = dict()
+
+parsedfiles = dict()
+parsedstrings = dict()
+
+parseduppers = dict()
+parsedlowers = dict()
+
 def setUp():
 	cmakes = glob.glob(os.path.split(__file__)[0] + '/testdata/KnownValues/*.cmake')
 	cmakes.sort()
@@ -31,25 +46,8 @@ def setUp():
 	parses.sort()
 
 	assert len(parses) == len(cmakes)
+	assert len(parses) == 9
 
-	self.strings = []
-	self.files = []
-	self.uppers = []
-	self.lowers = []
-
-	# format for each:
-	# key is the filename - extension
-	# value is whatever the variable name suggests
-	inputfiles = dict()
-	inputstrings = dict()
-	inputuppers = dict()
-	inputlowers = dict()
-
-	parsedfiles = dict()
-	parsedstrings = dict()
-
-	parseduppers = dict()
-	parsedlowers = dict()
 
 
 	for cmakefn, parsefn in zip(cmakes, parses):
