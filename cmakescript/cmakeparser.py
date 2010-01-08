@@ -46,6 +46,7 @@ class ParseInput():
 		self._lineindex = 0
 		self.alldone = False
 		self.gotline = False
+		self.alreadyseen = False
 
 	def __iter__(self):
 		"""Be usable as an iterator."""
@@ -64,6 +65,7 @@ class ParseInput():
 		assert self._lineindex < len(self._data)
 
 		# OK, we can actually return the data now
+		self.alreadyseen = self.gotline
 		self.gotline = True
 		return self._data[self._lineindex]
 
@@ -109,7 +111,7 @@ class CMakeParser():
 			# TODO try-except IncompleteStatementError here
 			func, args, comment = grammar.parse_line(line)
 
-			if isEnder(func):
+			if isEnder(func) and not self.input.alreadyseen:
 				return block
 
 			# Not an ender, so we accept this child.
