@@ -7,5 +7,6 @@ http://academic.cleardefinition.com
 Iowa State University HCI Graduate Program/VRAC
 """
 
-from cmakeparser import CMakeParser, parse_file, parse_string
+from cmakegrammar import IncompleteStatementError
+from cmakeparser import CMakeParser, parse_file, parse_string, UnclosedChildBlockError
 from cmakeformatter import CMakeFormatter

@@ -10,8 +10,10 @@ Iowa State University HCI Graduate Program/VRAC
 
 ###
 # standard packages
+import sys
 import os
 import re
+import subprocess
 from optparse import OptionParser
 
 ###
@@ -98,64 +100,111 @@ def find_cmake_scripts(startPath):
 
 	return cmakeScripts
 
-###
-# __main__
-
-if __name__ == "__main__":
-	## Can be used as a tool when executed directly
-
+class MergeTool:
 	mergetools = {	"diffmergemac" :	[
 						"open",
 						"/Applications/DiffMerge.app",
 						"-t1='Decrufted'",
 						"-t2='Result'",
 						"-t3='Original'",
-						"{cleaned}",
-						"{result}",
-						"{orig}"],
+						"{L}",
+						"{C}",
+						"{R}"],
 					"meld"	:	[
 						"meld",
-						"-diff",
-						"{cleaned}",
-						"{result}",
-						"{original}"] }
+						"--diff",
+						"{L}",
+						"{C}",
+						"{R}"] }
+
+	def __init__(self, tool):
+		self.tool = self.mergetools[tool]
+
+	def run(self, left, center, right):
+		args = [	arg.format(L=left, R=right, C=center)
+					for arg in self.tool	]
+		return subprocess.call(args)
+
+class App:
+	def __init__(self, args_in=sys.argv[1:]):
+		self.args_in = args_in
+		self.mergetool = None
+
+	def main(self):
+		parser = OptionParser(usage="usage: %prog [options] [[file|dir]...]",
+							  version="%prog 0.5, part of the cmakescript tools")
+
+		parser.add_option("-m", "--merge",
+							type="choice",
+							choices=MergeTool.mergetools.keys(),
+							metavar="APPNAME",
+							dest="mergetool",
+							default=None,
+							help="open a diff/merge app APPNAME for each file "
+								 "processed.  Supported APPNAME options are: " +
+								 " ".join(MergeTool.mergetools.keys())
+							)
+
+		parser.add_option("-q", "--quiet",
+						action="store_false", dest="verbose", default=True,
+						help="don't print status messages to stdout")
+
+		(self.options, args) = parser.parse_args(self.args_in)
+
+		if len(args) == 0:
+			args.append(os.getcwd())
+
+		inputfiles = []
+
+		for arg in args:
+			inputfiles.extend(find_cmake_scripts(arg))
+
+		for infile in inputfiles:
+			print "------------------------"
+			print infile
+			print "------------------------"
+
+			output = self.processFile(infile)
+			print output
+			if output is not None:
+				self.runMergeTool(infile, output)
 
 
-	parser = OptionParser(usage="usage: %prog [options] [[file|dir]...]",
-						  version="%prog 0.5, part of the cmakescript tools")
+	def processFile(self, filename):
+		try:
+			parser = cmakescript.parse_file(filename)
+		except (cmakescript.IncompleteStatementError,
+			   cmakescript.UnclosedChildBlockError):
+			return None
 
-	parser.add_option("-m", "--merge",
-						type="choice",
-						choices=mergetools.keys(),
-						metavar="APPNAME",
-						dest="mergeappname",
-						default=None,
-						help="open a diff/merge app APPNAME for each file "
-							 "processed.  Supported APPNAME options are: " +
-							 " ".join(mergetools.keys())
-						)
-
-	parser.add_option("-q", "--quiet",
-					action="store_false", dest="verbose", default=True,
-					help="don't print status messages to stdout")
-
-	(options, args) = parser.parse_args()
-
-	if len(args) == 0:
-		args.append(os.getcwd())
-
-	inputfiles = []
-
-	for arg in args:
-		inputfiles.extend(find_cmake_scripts(arg))
-
-
-
-	for infile in inputfiles:
-		print "------------------------"
-		print infile
-		print "------------------------"
-		parser = cmakescript.parse_file(infile)
 		formatter = cmakescript.CMakeFormatter(parser.parsetree)
-		output = formatter.output_as_cmake()
-		print output
+		return formatter.output_as_cmake()
+
+	def runMergeTool(self, filename, formatted):
+		if self.mergetool is None and self.options.mergetool is not None:
+			self.mergetool = MergeTool(self.options.mergetool)
+
+		if self.mergetool is not None:
+			t1 = subprocess.Popen(["mktemp", "/tmp/Decrufted.XXXXXXXXXX"], stdout=subprocess.PIPE)
+			tempclean = t1.communicate()[0]
+			t2 = subprocess.Popen(["mktemp", "/tmp/Original.XXXXXXXXXX"], stdout=subprocess.PIPE)
+			temporig = t2.communicate()[0]
+			orig = open(filename, 'r')
+			temporigfile = open(temporig, 'w', False)
+			temporigfile.write(orig.read())
+			orig.close()
+			temporigfile.close()
+
+			tempcleanfile = open(tempclean, 'w', False)
+			tempcleanfile.write(formatted)
+			tempcleanfile.close()
+
+			self.mergetool.run(tempclean, filename, temporig)
+
+###
+# __main__
+
+if __name__ == "__main__":
+## Can be used as a tool when executed directly
+	app = App()
+	app.main()
