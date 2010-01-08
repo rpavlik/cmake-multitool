@@ -12,6 +12,7 @@ Iowa State University HCI Graduate Program/VRAC
 # standard packages
 import unittest
 import re
+import os
 
 ###
 # third-party packages
@@ -26,12 +27,13 @@ import cmakeparser
 class KnownValues(unittest.TestCase):
 	def setUp(self):
 		import glob
-		cmakes = glob.glob('./testdata/KnownValues/*.cmake')
+		cmakes = glob.glob(os.path.split(__file__)[0] + '/testdata/KnownValues/*.cmake')
 		cmakes.sort()
-		parses = glob.glob('./testdata/KnownValues/*.parse')
+		parses = glob.glob(os.path.split(__file__)[0] + '/testdata/KnownValues/*.parse')
 		parses.sort()
 
 		assert len(parses) == len(cmakes)
+		assert len(parses) == 9
 
 		self.strings = []
 		self.files = []
@@ -56,11 +58,13 @@ class KnownValues(unittest.TestCase):
 			self.uppers.append( (cmakestr.upper(), parseupper) )
 			self.lowers.append( (cmakestr.lower(), parselower) )
 
-	subtest = ""
-	def _exc_info(self):
-		print "Subtest info:"
-		print self.subtest
-		return unittest.TestCase._exc_info(self)
+
+	if "nose" in dir():
+		subtest = ""
+		def _exc_info(self):
+			print "Subtest info:"
+			print self.subtest
+			return super(KnownParses, self)._exc_info()
 
 	def testFullParseKnownString(self):
 		"""passing in a known-good string to the full parser"""

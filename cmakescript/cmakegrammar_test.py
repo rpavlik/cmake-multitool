@@ -27,10 +27,13 @@ import cmakegrammar
 class AllRegexesCompilable(unittest.TestCase):
 	def testCompileRegexes(self):
 		"""Compiling regex string attributes of the grammar"""
-		reKeys = 0
-		regexStrings = filter(lambda (x, y): re.match("(_re)", x),
-				cmakegrammar.__dict__.iteritems())
-		for (varName, reStr) in regexStrings:
+		isReStringVar = re.compile("_re")
+		reVars = filter(isReStringVar.match, dir(cmakegrammar))
+		regexStrings = [vars(cmakegrammar)[varname]
+						for varname in reVars
+						if re.match("_re", varname)	]
+
+		for reStr in regexStrings:
 			re.compile(reStr)
 
 
@@ -193,7 +196,6 @@ class ParsePartialLine(unittest.TestCase):
 			self.subtest = line
 			self.assertRaises(cmakegrammar.IncompleteStatementError,
 							cmakegrammar.parse_line, line)
-
 
 if __name__=="__main__":
 	## Run tests if executed directly

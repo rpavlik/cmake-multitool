@@ -102,7 +102,6 @@ class CMakeParser():
 			# TODO try-except IncompleteStatementError here
 			func, args, comment = grammar.parse_line(line)
 			if isEnder(func):
-				print block
 				return block
 			# Not an ender, so we accept this child.
 			self.input.accept()
