@@ -167,6 +167,8 @@ class App:
 			output = self.processFile(infile)
 			print output
 			if output is not None:
+				# A trailing newline
+				output = output + "\n"
 				self.runMergeTool(infile, output)
 
 
@@ -185,14 +187,20 @@ class App:
 			self.mergetool = MergeTool(self.options.mergetool)
 
 		if self.mergetool is not None:
+			orig = open(filename, 'r')
+			originalscript = orig.read()
+			orig.close()
+
+			if originalscript == formatted:
+				return
+
 			t1 = subprocess.Popen(["mktemp", "/tmp/Decrufted.XXXXXXXXXX"], stdout=subprocess.PIPE)
 			tempclean = t1.communicate()[0]
 			t2 = subprocess.Popen(["mktemp", "/tmp/Original.XXXXXXXXXX"], stdout=subprocess.PIPE)
 			temporig = t2.communicate()[0]
-			orig = open(filename, 'r')
+
 			temporigfile = open(temporig, 'w', False)
-			temporigfile.write(orig.read())
-			orig.close()
+			temporigfile.write(originalscript)
 			temporigfile.close()
 
 			tempcleanfile = open(tempclean, 'w', False)
