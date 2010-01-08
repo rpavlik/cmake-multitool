@@ -101,7 +101,6 @@ class CMakeParser():
 		for line in self.input:
 			# TODO try-except IncompleteStatementError here
 			func, args, comment = grammar.parse_line(line)
-			assert complete
 			if isEnder(func):
 				print block
 				return block
