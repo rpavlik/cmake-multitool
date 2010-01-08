@@ -27,17 +27,19 @@ class IncompleteStatementError(Exception):
 
 
 def parse_line(line):
-	if line is not None:
-		m = reFullLine.match(line)
-		if m is None:
-			raise IncompleteStatementError
+	if line is None:
+		return (None, None, None)
 
-		FuncName, Args, Comment = m.group("FuncName",
-											"Args", # todo change to argsCareful
-											"Comment")
+	m = reFullLine.match(line)
+	if m is None:
+		raise IncompleteStatementError
 
-		if FuncName is None:
-			FuncName = ""
+	FuncName, Args, Comment = m.group("FuncName",
+										"Args", # todo change to argsCareful
+										"Comment")
+
+	if FuncName is None:
+		FuncName = ""
 
 	return (FuncName, Args, Comment)
 

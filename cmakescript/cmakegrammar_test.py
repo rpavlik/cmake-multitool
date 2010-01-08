@@ -197,6 +197,11 @@ class ParsePartialLine(unittest.TestCase):
 			self.assertRaises(cmakegrammar.IncompleteStatementError,
 							cmakegrammar.parse_line, line)
 
+class HandleEOFSentry(unittest.TestCase):
+	def testHandleEOFSentry(self):
+		self.assertEqual(cmakegrammar.parse_line(None), (None, None, None))
+
+
 if __name__=="__main__":
 	## Run tests if executed directly
 	try:

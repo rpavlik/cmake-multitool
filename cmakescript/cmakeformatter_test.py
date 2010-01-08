@@ -46,7 +46,7 @@ def setUp():
 	parses.sort()
 
 	assert len(parses) == len(cmakes)
-	assert len(parses) == 9
+	assert len(parses) == 10
 
 
 

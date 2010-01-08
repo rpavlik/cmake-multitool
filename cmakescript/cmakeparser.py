@@ -41,6 +41,8 @@ class ParseInput():
 
 	def __init__(self, strdata):
 		self._data = strdata.splitlines()
+		# Add a None to the end as a sentry.
+		self._data.append(None)
 		self._lineindex = 0
 		self.alldone = False
 		self.gotline = False
@@ -90,14 +92,16 @@ class CMakeParser():
 
 	def parse_block_children(self, startTag):
 		if startTag is None:
-			# the block is the entire file - so no line is an ender.
-			isEnder = lambda x: (False)
+			# AKA, the block is the entire file
+			isEnder = lambda x: (x is None)
+
 		elif grammar.reBlockBeginnings.match(startTag):
 			# can have children
 			endblock = grammar.dReBlockEndings[startTag.lower()]
 			isEnder = endblock.match
+
 		else:
-			# Can have no children
+			# This function can have no children
 			return None
 
 		block = []
@@ -114,10 +118,8 @@ class CMakeParser():
 			statement = ( func, args, comment, children)
 			block.append( statement )
 
-		if startTag is not None:
-			raise UnclosedChildBlockError
-
-		return block
+		# If we make it this far, we never found our Ender.
+		raise UnclosedChildBlockError
 
 
 #if __name__ == "__main__":
