@@ -102,8 +102,7 @@ def find_cmake_scripts(startPath):
 
 class MergeTool:
 	mergetools = {	"diffmergemac" :	[
-						"open",
-						"/Applications/DiffMerge.app",
+						"/Applications/DiffMerge.app/Contents/MacOS/DiffMerge",
 						"-t1='Decrufted'",
 						"-t2='Result'",
 						"-t3='Original'",
