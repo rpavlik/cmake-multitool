@@ -174,8 +174,11 @@ class App:
 	def processFile(self, filename):
 		try:
 			parser = cmakescript.parse_file(filename)
-		except (cmakescript.IncompleteStatementError,
-			   cmakescript.UnclosedChildBlockError):
+		except cmakescript.IncompleteStatementError:
+			print "Error parsing file: IncompleteStatementError"
+			return None
+		except cmakescript.UnclosedChildBlockError:
+			print "Error parsing file: UnclosedChildBlockError"
 			return None
 
 		formatter = cmakescript.CMakeFormatter(parser.parsetree)
