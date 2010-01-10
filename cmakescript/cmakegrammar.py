@@ -107,7 +107,7 @@ _reFullLine = ( r"^\s*(?P<FullLine>"	# start the full line bool group
 #	re.IGNORECASE | re.VERBOSE)
 
 ## Regex matching a full line
-reFullLine = re.compile(_reFullLine, re.IGNORECASE | re.VERBOSE)
+reFullLine = re.compile(_reFullLine, re.IGNORECASE | re.VERBOSE | re.MULTILINE)
 
 ## All functions that start a block
 _blockBeginnings = """	foreach

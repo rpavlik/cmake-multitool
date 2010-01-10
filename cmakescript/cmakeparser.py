@@ -25,6 +25,9 @@ grammar = cmakegrammar
 class UnclosedChildBlockError(Exception):
 	pass
 
+class InputExhaustedError(Exception):
+	pass
+
 def parse_string(instr):
 	parser = CMakeParser(ParseInput(instr))
 	parser.parse()
@@ -78,8 +81,24 @@ class ParseInput():
 		self._lineindex = self._lineindex + 1
 		self.gotline = False
 
-	# """A more intuitive alias for next() - get the current line"""
-	line = next
+	def merge(self):
+		# Don't want to merge current line with the next if we don't
+		# know what the current line is
+		assert self.gotline
+
+		ln = self._lineindex
+		if len(self._data) <= ln + 2:
+			# we want 2 - one more text line, and the EOF sentinel
+			raise InputExhaustedError
+		newdata = self._data[:ln] + [self._data[ln] + "\n" + self._data[ln+1]]
+		newdata.extend(self._data[ln+2:])
+		# Make sure we didn't change anything - leave off end of file sentinel
+		old = "\n".join(self._data[:-1])
+		thenew = "\n".join(newdata[:-1])
+		assert old == thenew
+
+		self._data = newdata
+		return self._data[ln]
 
 class CMakeParser():
 
@@ -108,8 +127,21 @@ class CMakeParser():
 
 		block = []
 		for line in self.input:
-			# TODO try-except IncompleteStatementError here
-			func, args, comment = grammar.parse_line(line)
+			# Keep merging lines until we either:
+			# - successfully parse
+			# - run out of input (that is, input contains incomplete statement)
+			while 1:
+				try:
+					func, args, comment = grammar.parse_line(line)
+				except grammar.IncompleteStatementError:
+					try:
+						line = self.input.merge()
+					except InputExhaustedError:
+						raise grammar.IncompleteStatementError
+				else:
+					# If no exception in parsing, break out
+					# of this while loop: we can keep going now
+					break
 
 			if isEnder(func) and not self.input.alreadyseen:
 				return block

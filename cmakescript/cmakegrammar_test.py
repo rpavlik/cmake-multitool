@@ -131,7 +131,8 @@ class ParseCompleteLine(unittest.TestCase):
 					("func(arg arg)",	("func", "arg arg", None)),
 					("func( arg arg )",	("func", "arg arg", None)),
 					("func( arg  ar )",	("func", "arg  ar", None)),
-					(r"func(\#notcmnt)",("func", r"\#notcmnt", None))	)
+					(r"func(\#notcmnt)",("func", r"\#notcmnt", None)),
+					("func(oh\nyes\nmultiline)", ("func", "oh\nyes\nmultiline", None))	)
 
 	commentsOnly = (	"#",
 				"# comment",
@@ -142,6 +143,8 @@ class ParseCompleteLine(unittest.TestCase):
 
 	mixed = (	("func() # cmnt",	("func", None, "# cmnt")),
 				(r"func(\#notcmnt) #iscmnt",("func", r"\#notcmnt", "#iscmnt"))	)
+
+
 
 	subtest = ""
 	def _exc_info(self):
