@@ -121,10 +121,22 @@ _reMLCommandStart = ( r"^\s*(?P<MLStart>"	# start the multi line bool group
 			+ r"(?P<MLComment>"			# start optional comment group
 			+ _reComment
 			+ r")?)\s*$" 		# end optional comment group
+			)
 
 
-
-)
+## The middle/end of a multiline command
+_reMLCommandStart = ( r"^\s*(?P<MLMiddle>"	# start the multi line bool group
+			+ r"\s*"
+			+ r"(?P<MLArgs>"
+			+ r"("
+			+ _reArg
+			+ r")*)"
+			+ r"(?P<MLEndCommand>\))?"
+			+ r"\s*"
+			+ r"(?P<MLComment>"			# start optional comment group
+			+ _reComment
+			+ r")?)\s*$" 		# end optional comment group
+			)
 
 ## Regex matching all the functions that permit parens in their args
 #reParenArgFuncs = re.compile("^" + _parenArgFuncs + "$",

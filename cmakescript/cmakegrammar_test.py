@@ -169,6 +169,7 @@ class HandleMLCommands(unittest.TestCase):
 		data = (	r"command(arg ",
 					r"command( #whatever",
 					r"command( more_args1",
+					r"command(1arg #whatever ",
 					r"command(1arg 1 #whatever",
 					r'business(anarg\"withquote another',
 					r'magic("quoted\" arg" PIE #food',
