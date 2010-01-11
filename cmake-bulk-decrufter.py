@@ -85,7 +85,10 @@ class App:
 			return None
 
 		#formatter = cmakescript.CMakeFormatter(parser.parsetree)
-		formatter = cmakescript.NiceFormatter(parser.parsetree)
+		visitor = cmakescript.VisitorRemoveRedundantConditions()
+		tree = cmakescript.CMakeBlock(parser.parsetree)
+		tree.accept(visitor)
+		formatter = cmakescript.NiceFormatter(tree.get())
 		return formatter.output_as_cmake()
 
 	def runMergeTool(self, filename, formatted):

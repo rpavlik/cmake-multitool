@@ -11,3 +11,4 @@ from cmakescript.cmakegrammar import IncompleteStatementError
 from cmakescript.cmakeparser import CMakeParser, parse_file, parse_string, UnclosedChildBlockError, InputExhaustedError
 from cmakescript.cmakeformatter import CMakeFormatter, NiceFormatter
 from cmakescript.findcmakescripts import find_cmake_scripts
+from cmakescript.cmakemodifier import CMakeBlock, CMakeStatement, CMakeVisitor, VisitorRemoveRedundantConditions
