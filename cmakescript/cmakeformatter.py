@@ -42,27 +42,44 @@ class CMakeFormatter():
 
 		func, args, comment, children = statement
 
-		if args is None:
-			args = ""
-
 		if func == "" and comment is None:
 			thisline = ""
 		else:
-			thisline = "\t" * level
+			thisline = self.create_indent(level)
 
-		if func != "":
-			thisline = thisline + func.lower() + "(" + args + ")"
-			if comment is not None:
-				thisline = thisline + "\t"
-
-		if comment is not None:
-			thisline = thisline + comment
-
+		thisline = self.create_indent(level)
+		thisline = self.output_function(statement, level, thisline)
+		thisline = self.output_args(statement, level, thisline)
+		thisline = self.output_comment(statement, level, thisline)
 		output = [thisline]
 		# Recurse into children
 		output.extend(self.output_block(children, level + 1))
 		return output
 
+	def create_indent(self, level):
+		return "\t" * level
+
+	def output_function(self, statement, level, line):
+		func, args, comment, children = statement
+		return line + func
+
+	def output_args(self, statement, level, line):
+		func, args, comment, children = statement
+		if args is None:
+			args = ""
+		newline = line
+		if func is not None and func != "":
+			newline = newline + "(" + args + ")"
+		return newline
+
+	def output_comment(self, statement, level, line):
+		func, args, comment, children = statement
+		newline = line
+		if comment is not None:
+			if newline != "" and newline != self.create_indent(level):
+				newline = newline + "\t"
+			newline = newline + comment
+		return newline
 
 #if __name__ == "__main__":
 #	pass
