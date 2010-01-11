@@ -158,7 +158,7 @@ class App:
 		for arg in args:
 			inputfiles.extend(find_cmake_scripts(arg))
 
-		for infile, number in zip(inputfiles, range(len(inputfiles))):
+		for infile, number in zip(inputfiles, range(1, len(inputfiles)+1)):
 			print "------------------------"
 			print infile + " - " + str(number) + " of " + str(len(inputfiles))
 			print "------------------------"
