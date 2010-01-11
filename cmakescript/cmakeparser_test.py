@@ -22,6 +22,7 @@ import glob
 ###
 # internal packages
 import cmakeparser
+import findcmakescripts
 
 # format for each:
 # key is the filename - extension
@@ -145,6 +146,21 @@ class KnownValues(unittest.TestCase):
 ## Requirement:
 ## Parsing invalid source trees should fail
 # TODO
+
+class WildModules(unittest.TestCase):
+	def setUp(self):
+		basedir = os.path.split(__file__)[0] + '/testdata/WildModules'
+		self.modules = findcmakescripts.find_cmake_scripts(basedir)
+
+	def testLoadWildModules(self):
+		for filename in self.modules:
+
+			try:
+				parser = cmakeparser.parse_file(filename)
+			except:
+				print filename, parser.input._lineindex
+			cmakeparser.parse_file(filename)
+
 
 if __name__=="__main__":
 	## Run tests if executed directly
