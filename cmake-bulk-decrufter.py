@@ -12,7 +12,6 @@ Iowa State University HCI Graduate Program/VRAC
 # standard packages
 import sys
 import os
-import re
 import subprocess
 from optparse import OptionParser
 
@@ -23,106 +22,8 @@ from optparse import OptionParser
 ###
 # internal packages
 import cmakescript
+from mergetool import MergeTool
 
-def recursive_listdir(dir):
-	"""
-	Return a list of all regular, non-hidden files, recursing directories
-
-	Warning: if you run this on a directory with a lot of files, it may
-	end up producing some enormous lists!  Use the iterator version instead
-	in those cases, as the input to a "filter" expression.
-
-	This returns the full absolute path to the files, and in no particular
-	order (whatever order they are received from os.listdir, when recursing
-	depth-first into sub-directories)
-	"""
-	files = []
-	for item in os.listdir(dir):
-		# Skip hidden files/directories
-		if item[0] == ".":
-			continue
-
-		current = os.path.join(dir, item)
-
-		if os.path.isfile(current):
-			files.append(current)
-		else:
-			files.extend(recursive_listdir(current))
-
-	return files
-
-def recursive_listdir_iter(dir):
-	"""
-	An iterator over all regular, non-hidden files in dir and below.
-
-	To best handle directories with many children, use a filter expression
-	with recursive_listdir_iter(yourdir) as the "sequence" argument.
-
-	This returns the full absolute path to the files, and in no particular
-	order (whatever order they are received from os.listdir, when recursing
-	depth-first into sub-directories)
-	"""
-	for item in os.listdir(dir):
-		if item[0] == ".":
-			continue
-
-		current = os.path.join(dir, item)
-		if os.path.isfile(current):
-			yield current
-		else:
-			for recursive_item in recursive_listdir_iter(current):
-				yield recursive_item
-
-def find_cmake_scripts(startPath):
-
-	# Get the path the way we want it.
-	startPath = os.path.abspath(startPath)
-
-	if os.path.isfile(startPath):
-		# Any file directly passed in is assumed to be a script, no matter its name
-		return [startPath]
-
-
-	# Build a regex to find CMakeLists.txt or *.cmake, case insensitive
-	# A match against the filename (not including the path!) means that
-	# this is probably a valid input file.
-	reCMakeLists = r"(?ix)^(CMakeLists\.txt)$"
-	reCMakeModule = r"(?ix)(\.cmake)$"
-	isScript = re.compile(r"(" + reCMakeLists + r"|" + reCMakeModule + r")")
-
-	# A little function to use with filter - so we only apply the regex
-	# to the file's basename, not the full path
-	isPathScript = lambda filepath: isScript.search(os.path.basename(filepath))
-
-	# Now, actually do it.
-	# Use our regex to filter the recursive list of files returned
-	cmakeScripts = filter(isPathScript, recursive_listdir_iter(startPath))
-
-	return cmakeScripts
-
-class MergeTool:
-	mergetools = {	"diffmergemac" :	[
-						"/Applications/DiffMerge.app/Contents/MacOS/DiffMerge",
-						"-t1='Decrufted'",
-						"-t2='Result'",
-						"-t3='Original'",
-						"{L}",
-						"{C}",
-						"{R}"],
-					"meld"	:	[
-						"meld",
-						"--diff",
-						"{L}",
-						"{C}",
-						"{R}"] }
-
-	def __init__(self, tool):
-		self.tool = self.mergetools[tool]
-
-	def run(self, left, center, right):
-		args = [	arg.format(L=left, R=right, C=center)
-					for arg in self.tool	]
-		return subprocess.call(args)
 
 class App:
 	def __init__(self, args_in=sys.argv[1:]):
@@ -156,7 +57,7 @@ class App:
 		inputfiles = []
 
 		for arg in args:
-			inputfiles.extend(find_cmake_scripts(arg))
+			inputfiles.extend(cmakescript.find_cmake_scripts(arg))
 
 		for infile, number in zip(inputfiles, range(1, len(inputfiles)+1)):
 			print "------------------------"
@@ -187,13 +88,13 @@ class App:
 		if self.mergetool is None and self.options.mergetool is not None:
 			self.mergetool = MergeTool(self.options.mergetool)
 
-		if self.mergetool is not None:
-			orig = open(filename, 'r')
-			originalscript = orig.read()
-			orig.close()
-
-			if originalscript == formatted:
+		orig = open(filename, 'r')
+		originalscript = orig.read()
+		orig.close()
+		if originalscript == formatted:
 				return
+
+		if self.mergetool is not None:
 
 			modname = os.path.splitext(os.path.basename(filename))[0]
 
@@ -213,12 +114,7 @@ class App:
 
 			self.mergetool.run(tempclean, filename, temporig)
 		else:
-			orig = open(filename, 'r')
-			originalscript = orig.read()
-			orig.close()
-
-			if originalscript == formatted:
-				return
+			# If we aren't merging, print the formatted output
 			print formatted
 
 ###
