@@ -187,7 +187,9 @@ class ParseCompleteLine(unittest.TestCase):
 
 	mixed = (	("func() # cmnt",	("func", None, "# cmnt")),
 			(r"func(\#notcmnt) #iscmnt",("func", r"\#notcmnt", "#iscmnt")),
-			("func(arg1 #comment\narg2)", ("func", "arg1 arg2", "#comment"))	)
+			("func(arg1 #comment\narg2)", ("func", "arg1 arg2", "#comment")),
+			("func(arg1 # comment morecomment\narg2)", ("func", "arg1 arg2", "# comment morecomment")),
+			("func(arg1 # comment morecomment\narg2) # more comment", ("func", "arg1 arg2", "# comment morecomment\n# more comment")))
 
 
 

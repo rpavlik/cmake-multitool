@@ -66,7 +66,7 @@ _reArg = r"""(?x) (?:
 ## A comment: everything after # as long as it's not preceded by a \
 # the ?<! is a "negative backward assertion handling "not after a \"
 # (?<!\\)
-_reComment = r"(?x) (?P<Comment> (?<!\\)\#(?:\s*\S+)*)"
+_reComment = r"(?x) (?P<Comment> (?<!\\) \# (?: [^\S\n]* \S+)*)"
 
 ## The start of a command, up until the arguments
 _reCommandStart = _reFuncName + r"\s* \("
@@ -93,7 +93,7 @@ _reFullLine = ( r"^\s*(?P<FullLine>"	# start the full line bool group
 
 ## Either an argument or a comment: use for parsing initial args of
 ## a multiline command
-_reMLChunk = ( r"(?mx)(" + _reArg + "|" + _reComment + ")")
+_reMLChunk = ( r"(?mx)(" + _reComment + "\n|" + _reArg + ")")
 
 ## Regex matching all the functions that permit parens in their args
 #reParenArgFuncs = re.compile("^" + _parenArgFuncs + "$",
