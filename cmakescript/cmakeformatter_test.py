@@ -23,6 +23,8 @@ import glob
 # internal packages
 import cmakeparser
 import cmakegrammar
+import cmakeformatter
+import findcmakescripts
 
 
 # format for each:
@@ -118,6 +120,23 @@ class KnownParses(unittest.TestCase):
 			formatter = cmakeformatter.CMakeFormatter(parsedstrings[key])
 			formatted = formatter.output_as_cmake()
 			self.assertEqual(cmakeparser.parse_string(formatted).parsetree, parsedstrings[key])
+
+class WildModules(unittest.TestCase):
+	def setUp(self):
+		basedir = os.path.split(__file__)[0] + '/testdata/WildModules'
+		self.modules = findcmakescripts.find_cmake_scripts(basedir)
+
+	def testWildModuleParsesRoundtrip(self):
+		for filename in self.modules:
+
+			try:
+				parser = cmakeparser.parse_file(filename)
+			except:
+				continue
+			formatter = cmakeformatter.CMakeFormatter(parser.parsetree)
+			formatted = formatter.output_as_cmake()
+			self.assertEqual(cmakeparser.parse_string(formatted).parsetree, parser.parsetree)
+
 
 if __name__=="__main__":
 	## Run tests if executed directly
