@@ -158,13 +158,12 @@ class App:
 		for arg in args:
 			inputfiles.extend(find_cmake_scripts(arg))
 
-		for infile in inputfiles:
+		for infile, number in zip(inputfiles, range(len(inputfiles))):
 			print "------------------------"
-			print infile
+			print infile + " - " + str(number) + " of " + str(len(inputfiles))
 			print "------------------------"
 
 			output = self.processFile(infile)
-			print output
 			if output is not None:
 				# A trailing newline
 				output = output + "\n"
@@ -197,10 +196,12 @@ class App:
 				return
 
 			modname = os.path.splitext(os.path.basename(filename))[0]
-			t1 = subprocess.Popen(["mktemp", "/tmp/"+modname+"Decrufted.XXXXXX.cmake"], stdout=subprocess.PIPE)
-			tempclean = t1.communicate()[0].strip()
-			t2 = subprocess.Popen(["mktemp", "/tmp/"+modname+"Original.XXXXXX.cmake"], stdout=subprocess.PIPE)
-			temporig = t2.communicate()[0].strip()
+
+			t1 = subprocess.Popen(["mktemp", "-d"], stdout=subprocess.PIPE)
+			tempdir = t1.communicate()[0].strip()
+			tempclean = os.path.join(tempdir, modname+".Decrufted.cmake")
+			temporig = os.path.join(tempdir, modname+".Original.cmake")
+
 
 			temporigfile = open(temporig, 'w', False)
 			temporigfile.write(originalscript)
@@ -211,6 +212,14 @@ class App:
 			tempcleanfile.close()
 
 			self.mergetool.run(tempclean, filename, temporig)
+		else:
+			orig = open(filename, 'r')
+			originalscript = orig.read()
+			orig.close()
+
+			if originalscript == formatted:
+				return
+			print formatted
 
 ###
 # __main__
