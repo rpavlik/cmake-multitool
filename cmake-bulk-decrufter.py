@@ -196,10 +196,11 @@ class App:
 			if originalscript == formatted:
 				return
 
-			t1 = subprocess.Popen(["mktemp", "/tmp/Decrufted.XXXXXXXXXX"], stdout=subprocess.PIPE)
-			tempclean = t1.communicate()[0]
-			t2 = subprocess.Popen(["mktemp", "/tmp/Original.XXXXXXXXXX"], stdout=subprocess.PIPE)
-			temporig = t2.communicate()[0]
+			modname = os.path.splitext(os.path.basename(filename))[0]
+			t1 = subprocess.Popen(["mktemp", "/tmp/"+modname+"Decrufted.XXXXXX.cmake"], stdout=subprocess.PIPE)
+			tempclean = t1.communicate()[0].strip()
+			t2 = subprocess.Popen(["mktemp", "/tmp/"+modname+"Original.XXXXXX.cmake"], stdout=subprocess.PIPE)
+			temporig = t2.communicate()[0].strip()
 
 			temporigfile = open(temporig, 'w', False)
 			temporigfile.write(originalscript)
