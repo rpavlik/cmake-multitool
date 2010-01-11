@@ -131,6 +131,8 @@ class AcceptRejectArgument(unittest.TestCase):
 					r"1arg-1"
 					r"anarg\"withquote",
 					r'"quoted arg"',
+					r'""',
+					r"''",
 					r'''"this is a long
 					 argument"''')
 		for item in data:
@@ -143,7 +145,8 @@ class AcceptRejectArgument(unittest.TestCase):
 					r" more_args1",
 					r"1arg 1"
 					r"anarg\"withquote",
-					r'"quoted" args"' )
+					r'"quoted" args"',
+					r'"\"')
 		for item in data:
 			print item
 			self.assertEqual(re.match(cmakegrammar._reArg + "$", item), None)
