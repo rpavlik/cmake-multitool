@@ -121,6 +121,46 @@ class AcceptRejectReComment(unittest.TestCase):
 			self.subtest = line
 			self.assertEqual(re.search(cmakegrammar._reComment, line).group("Comment"), line.strip())
 
+class AcceptRejectArgument(unittest.TestCase):
+	"""Parsing arguments apart using a regex"""
+	def testAcceptValidArg(self):
+		"""Accept a valid argument with re.match"""
+		data = (	r"arg",
+					r"more_args1",
+					r"1arg-1"
+					r"anarg\"withquote",
+					r'"quoted arg"',
+					r'''"this is a long
+					 argument"''')
+		for item in data:
+			print item
+			print re.match(cmakegrammar._reArg + "$", item)
+
+	def testRejectInvalidArg(self):
+		"""Reject an invalid argument with re.match"""
+		data = (	r"arg'",
+					r" more_args1",
+					r"1arg 1"
+					r"anarg\"withquote",
+					r'"quoted" args"' )
+		for item in data:
+			print str(item)
+			self.assertEqual(re.match(cmakegrammar._reArg + "$", item), None)
+
+	def testSplitArgs(self):
+		"""Split valid arguments"""
+		data = (	(r"arg ", 1),
+					(r"more_args1", 1),
+					(r"1arg 1", 2),
+					(r'anarg\"withquote another', 2),
+					(r'"quoted\" arg" PIE', 2),
+					(r'''"this is a long
+					 argument" another''', 2))
+		for item, number in data:
+			print item
+			print re.findall(cmakegrammar._reArg, item)
+			self.assertEqual(len(re.findall(cmakegrammar._reArg, item)), number)
+
 
 ## Requirement:
 ## Be able to parse a valid cmake command input line.
@@ -203,6 +243,7 @@ class ParsePartialLine(unittest.TestCase):
 
 class HandleEOFSentry(unittest.TestCase):
 	def testHandleEOFSentry(self):
+		"""Parsing None as your line results in an all-None tuple"""
 		self.assertEqual(cmakegrammar.parse_line(None), (None, None, None))
 
 

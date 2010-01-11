@@ -69,6 +69,12 @@ _reFuncName = r"(?x) (?P<FuncName> [\w\d]+)"
 ## Extremely general "non-empty arguments," no leading or trailing whitespc
 _reArgs = r"(?x) (?P<Args> (\S ((\s)*\S)*))"
 
+_reArg = r"""(?x) (
+			(?:\\.|[^"'\s])+|	# anything that's a single word
+			"(?:\\.|[^"\\])+"|	# anything double-quoted
+			'(?:\\.|[^'\\])+')		# anything single-quoted
+			"""
+
 ## Standard command args: no parens permitted
 #_reArgsStd = r"(?x) \s* (?P<ArgsStd> ([\S-\(\)]([\S-\(\)]|\s[\S-\(\)])* )?) \s*"
 
