@@ -91,84 +91,9 @@ _reFullLine = ( r"^\s*(?P<FullLine>"	# start the full line bool group
 			+ r")?" 		# end optional comment group
 			+ r")\s*$")		# end the full line bool group
 
-## The start of a multiline command
-_reMLCommandStart = ( r"^\s*(?P<MLStart>"	# start the multi line bool group
-			+ _reFuncName
-			+ r"""
-			\s* \(
-			\s*
-			(?P<MLArgs>
-			"""
-			+ _reArg
-			+ r"""
-			(\s+
-			"""
-			+ _reArg
-			+ r"""
-			)*)?
-			
-			\s*
-			(?P<MLComment>	# start optional comment group
-			"""
-			+ _reComment
-			+ r"""
-			)?)\s*$ 		# end optional comment group
-			"""
-			)
-
-
-## RE to reprocess the args from a ML command
-#_reMLArgsLine = ( r"^\s*(?P<MLArgs>(?:"
-#			+ _reArg
-#			+ r"""\s*)*)
-#			\s*
-#			(?P<MLComment>	# start optional comment group
-#			"""
-#			+ _reComment
-#			+ r"""
-#			)?\s*$ 		# end optional comment group
-#			"""
-#			)
-
-## RE to reprocess the args from a ML command
-_reMLArgsLine = ( r"(?mx)^\s*(?P<MLArgs>(?:"
-			+ _reArg
-			+ r"""\s*)*)
-			\s*
-			(?P<MLComment>(	# start optional comment group
-			"""
-			+ _reComment
-			+ r"""
-			)?)\s*$ 		# end optional comment group
-			"""
-			)
-
+## Either an argument or a comment: use for parsing initial args of
+## a multiline command
 _reMLChunk = ( r"(?mx)(" + _reArg + "|" + _reComment + ")")
-
-## The middle/end of a multiline command
-_reMLCommandMiddle = ( r"^\s*(?P<MLMiddle>"	# start the multi line bool group
-			+ r"""
-			\s*
-			(?P<MLArgs>
-			"""
-			+ _reArg
-			+ r"""
-			(\s+
-			"""
-			+ _reArg
-			+ r"""
-			)*)?
-			(?P<MLCommandEnd>
-			(\s*\))?
-			)
-			\s*
-			(?P<MLComment>	# start optional comment group
-			"""
-			+ _reComment
-			+ r"""
-			)?)\s*$ 		# end optional comment group
-			"""
-			)
 
 ## Regex matching all the functions that permit parens in their args
 #reParenArgFuncs = re.compile("^" + _parenArgFuncs + "$",
@@ -221,6 +146,7 @@ assert len(_blockTagsDict) == len(dReBlockTagsDict)
 
 
 def parse_line(line):
+	# Handle EOF sentry: a "None" entry returns an all-None tuple
 	if line is None:
 		return (None, None, None)
 
@@ -231,23 +157,12 @@ def parse_line(line):
 	FuncName, Args, Comment = m.group("FuncName",
 					"Args", # todo change to argsCareful
 					"Comment")
-	
-	#reMLCommandStart = re.compile(_reMLCommandStart, re.MULTILINE | re.VERBOSE)
-	#reMLCommandMiddle = re.compile(_reMLCommandMiddle, re.MULTILINE | re.VERBOSE)
+
 	if Args is not None and re.search(r"\n", Args) is not None:
-		# This is multiline
-		#match = reMLCommandStart.match(line)
-		#Args = match.group("MLArgs")
-		#Comment = match.group("MLComment")
-		#hasEnd = None
-		#while hasEnd is None:
-		#	match = reMLCommandMiddle.match(line, match.end())
-		#	Args = Args + "\n" + match.group("MLArgs")
-		#	Comment = Comment + "\n" +  match.group("MLComment")
-		#	hasEnd = match.group("MLCommandEnd")
+		# This is multiline - we may have comments embedded in the args
+		# so, we need to parse that apart more carefully
+
 		units = re.findall(_reMLChunk, Args)
-		print "Args:", Args
-		print "Units: ", units
 		MLArgs = []
 		MLComment = []
 		for unit in units:
@@ -255,10 +170,7 @@ def parse_line(line):
 				MLComment.append(unit[0])
 			elif re.match(_reArg, unit[0]):
 				MLArgs.append(unit[0])
-				
-			#match = re.match(_reMLArgsLine, unit[0], re.MULTILINE | re.VERBOSE)
-			#MLArgs = MLArgs + "\n" + match.group("MLArgs")
-			#MLComment = MLComment + "\n" +  match.group("MLComment")
+
 		Args = " ".join(MLArgs)
 		if Comment is not None:
 			MLComment.append(Comment)
@@ -266,6 +178,8 @@ def parse_line(line):
 			Comment = "\n".join(MLComment)
 		else:
 			Comment = None
+
+	# Can't have a None FuncName unless we are out of input
 	if FuncName is None:
 		FuncName = ""
 

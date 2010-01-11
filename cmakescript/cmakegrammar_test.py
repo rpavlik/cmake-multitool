@@ -166,43 +166,6 @@ class AcceptRejectArgument(unittest.TestCase):
 			self.assertEqual(len(re.findall(cmakegrammar._reArg, item)), number)
 
 
-class HandleMLCommands(unittest.TestCase):
-	def testAcceptStartMultiLine(self):
-		"""Accept starts of multilines"""
-		data = (	r"command(arg ",
-					r"command( #whatever",
-					r"command( more_args1",
-					r"command(1arg #whatever ",
-					r"command(1arg 1 #whatever",
-					r'business(anarg\"withquote another',
-					r'magic("quoted\" arg" PIE #food',
-					r'''command("this is a long
-					 argument" another''')
-		for item in data:
-			if re.match(cmakegrammar._reMLCommandStart, item) is None:
-				print item
-				print cmakegrammar._reMLCommandStart
-			self.assertNotEqual(re.match(cmakegrammar._reMLCommandStart, item), None)
-
-	def testRejectStartMultiLine(self):
-		"""Reject invalid starts of multilines"""
-		data = (	r"command arg ",
-					r"command #whatever",
-					r"command more_args 1",
-					r"1arg #whatever ",
-					r'magic "quoted\" arg" PIE #food',
-					r'''command "this is a long
-					 argument" another''')
-		for item in data:
-			if re.match(cmakegrammar._reMLCommandStart, item) is not None:
-				print item
-				print re.match(cmakegrammar._reMLCommandStart, item).groups()
-			self.assertEqual(re.match(cmakegrammar._reMLCommandStart, item), None)
-
-
-
-
-
 ## Requirement:
 ## Be able to parse a valid cmake command input line.
 class ParseCompleteLine(unittest.TestCase):

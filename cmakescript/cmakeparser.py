@@ -143,7 +143,9 @@ class CMakeParser():
 					# of this while loop: we can keep going now
 					break
 
-			if isEnder(func) and not self.input.alreadyseen:
+			if startTag == None and isEnder(func):
+				return block
+			elif func is not None and isEnder(func) and not self.input.alreadyseen:
 				return block
 
 			# Not an ender, so we accept this child.
