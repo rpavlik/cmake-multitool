@@ -25,24 +25,6 @@ class IncompleteStatementError(Exception):
 	"""Exception raised by parse_line when not given a full valid statement"""
 	pass
 
-
-def parse_line(line):
-	if line is None:
-		return (None, None, None)
-
-	m = reFullLine.match(line)
-	if m is None:
-		raise IncompleteStatementError
-
-	FuncName, Args, Comment = m.group("FuncName",
-										"Args", # todo change to argsCareful
-										"Comment")
-
-	if FuncName is None:
-		FuncName = ""
-
-	return (FuncName, Args, Comment)
-
 ####
 ## Strings of sub-regexes to compile later - all are re.VERBOSE
 
@@ -131,7 +113,9 @@ _reMLCommandStart = ( r"^\s*(?P<MLMiddle>"	# start the multi line bool group
 			+ r"("
 			+ _reArg
 			+ r")*)"
-			+ r"(?P<MLEndCommand>\))?"
+			+ r"(?P<MLEndCommand>"
+			+ _reCommandEnd
+			+ ")?"
 			+ r"\s*"
 			+ r"(?P<MLComment>"			# start optional comment group
 			+ _reComment
@@ -145,29 +129,9 @@ _reMLCommandStart = ( r"^\s*(?P<MLMiddle>"	# start the multi line bool group
 ## Regex matching a full line
 reFullLine = re.compile(_reFullLine, re.IGNORECASE | re.VERBOSE | re.MULTILINE)
 
-## All functions that start a block
-_blockBeginnings = """	foreach
-						function
-						if
-						elseif
-						else
-						macro
-						while	""".split()
-_reBlockBeginnings = (r"(?ix)" +		# case-insensitive and verbose
-						r"(?P<BlockBeginnings>" +
-						"|".join(_blockBeginnings) +
-						r")")
-
-## A compiled regex that matches exactly the functions that start a block
-reBlockBeginnings = re.compile(_reBlockBeginnings, re.IGNORECASE)
-
 ## A dictionary where blockEndings[blockBeginFunc]=(blockEndFunc1,...),
-## all datatypes are strings.  Size is one more than blockBeginnings
-## because we match the empty string opening function (dummy for start
-## of file) with a dummy EOF string as an end tag
-_blockEndings = {'' : ('_CMAKE_PARSER_EOF_FLAG_',),
-
-				'foreach'	: ('endforeach',),
+## all datatypes are strings.
+_blockTagsDict = {'foreach'	: ('endforeach',),
 
 				'function'	: ('endfunction',),
 
@@ -179,13 +143,19 @@ _blockEndings = {'' : ('_CMAKE_PARSER_EOF_FLAG_',),
 
 				'while'	: ('endwhile',)}
 
-# Catch any "developer failed to add new function to both lists" bugs
-assert len(_blockEndings) - 1 == len(_blockBeginnings)
+##
+_reBlockBeginnings = (r"(?ix)" +		# case-insensitive and verbose
+						r"(?P<BlockBeginnings>" +
+						"|".join(_blockTagsDict.keys()) +
+						r")")
+
+## A compiled regex that matches exactly the functions that start a block
+reBlockBeginnings = re.compile(_reBlockBeginnings, re.IGNORECASE)
 
 ## A big list comprehension that makes a dictionary with pairs (key, end)
 ## where key is a start tag key from blockEndings and end is a
 ## compiled regex that only exactly matches any corresponding ending
-dReBlockEndings = dict([  # Make a dict from list comprehension of pairs
+dReBlockTagsDict = dict([  # Make a dict from list comprehension of pairs
 	# the dictionary key is just the start tag
 	( beginning,
 	# the value is a compiled regex matching any of the end tags
@@ -195,8 +165,29 @@ dReBlockEndings = dict([  # Make a dict from list comprehension of pairs
 				r")$", re.IGNORECASE) )
 
 	# for every key-value pair in the non-compiled dictionary
-	for beginning, ends in _blockEndings.iteritems() ])
+	for beginning, ends in _blockTagsDict.iteritems() ])
 # end of huge list comprehension
 
 # sanity check the comprehension above
-assert len(_blockEndings) == len(dReBlockEndings)
+assert len(_blockTagsDict) == len(dReBlockTagsDict)
+
+
+def parse_line(line):
+	if line is None:
+		return (None, None, None)
+
+	m = reFullLine.match(line)
+	if m is None:
+		raise IncompleteStatementError
+
+	FuncName, Args, Comment = m.group("FuncName",
+										"Args", # todo change to argsCareful
+										"Comment")
+	#if re.search(r"\n", Args):
+		# This is multiline
+	#	pass
+
+	if FuncName is None:
+		FuncName = ""
+
+	return (FuncName, Args, Comment)

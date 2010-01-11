@@ -164,8 +164,8 @@ class AcceptRejectArgument(unittest.TestCase):
 
 
 class HandleMLCommands(unittest.TestCase):
-	def testStartMultiLine(self):
-		"""Split valid arguments"""
+	def testAcceptStartMultiLine(self):
+		"""Accept starts of multilines"""
 		data = (	r"command(arg ",
 					r"command( #whatever",
 					r"command( more_args1",
@@ -176,9 +176,27 @@ class HandleMLCommands(unittest.TestCase):
 					r'''command("this is a long
 					 argument" another''')
 		for item in data:
-			print item
-			print re.match(cmakegrammar._reMLCommandStart, item)
+			if re.match(cmakegrammar._reMLCommandStart, item) is None:
+				print item
 			self.assertNotEqual(re.match(cmakegrammar._reMLCommandStart, item), None)
+
+	def testRejectStartMultiLine(self):
+		"""Reject invalid starts of multilines"""
+		data = (	r"command arg ",
+					r"command #whatever",
+					r"command more_args 1",
+					r"1arg #whatever ",
+					r'magic "quoted\" arg" PIE #food',
+					r'''command "this is a long
+					 argument" another''')
+		for item in data:
+			if re.match(cmakegrammar._reMLCommandStart, item) is not None:
+				print item
+				print re.match(cmakegrammar._reMLCommandStart, item).groups()
+			self.assertEqual(re.match(cmakegrammar._reMLCommandStart, item), None)
+
+
+
 
 
 ## Requirement:

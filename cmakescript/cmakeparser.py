@@ -118,7 +118,7 @@ class CMakeParser():
 
 		elif grammar.reBlockBeginnings.match(startTag):
 			# can have children
-			endblock = grammar.dReBlockEndings[startTag.lower()]
+			endblock = grammar.dReBlockTagsDict[startTag.lower()]
 			isEnder = endblock.match
 
 		else:
