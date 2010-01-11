@@ -54,8 +54,8 @@ _reArgs = r"(?x) (?P<Args> (\S ((\s)*\S)*))"
 ## A given single valid argument
 _reArg = r"""(?x) (
 			(?:\\.|[^"'\s])+|	# anything that's a single word
-			"(?:\\.|[^"\\])+"|	# anything double-quoted
-			'(?:\\.|[^'\\])+')		# anything single-quoted
+			"(?:\\.|[^"\\])*"|	# anything double-quoted
+			'(?:\\.|[^'\\])*')		# anything single-quoted
 			"""
 
 
@@ -191,3 +191,6 @@ def parse_line(line):
 		FuncName = ""
 
 	return (FuncName, Args, Comment)
+
+def split_args(args):
+	return re.findall(_reArg, args)

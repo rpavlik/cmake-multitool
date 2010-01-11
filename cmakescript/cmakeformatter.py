@@ -18,7 +18,9 @@ import re
 
 ###
 # internal packages
-# - none
+import cmakegrammar
+
+grammar = cmakegrammar
 
 
 
@@ -47,7 +49,6 @@ class CMakeFormatter():
 		else:
 			thisline = self.create_indent(level)
 
-		thisline = self.create_indent(level)
 		thisline = self.output_function(statement, level, thisline)
 		thisline = self.output_args(statement, level, thisline)
 		thisline = self.output_comment(statement, level, thisline)
@@ -79,6 +80,28 @@ class CMakeFormatter():
 			if newline != "" and newline != self.create_indent(level):
 				newline = newline + "\t"
 			newline = newline + comment
+		return newline
+
+
+class NiceFormatter(CMakeFormatter):
+	def output_function(self, statement, level, line):
+		func, args, comment, children = statement
+		return line + func.lower()
+
+	def output_args(self, statement, level, line):
+		func, args, comment, children = statement
+		if args is None:
+			args = ""
+		newline = line
+
+		if func is not None and func != "":
+			arglist = grammar.split_args(args)
+			if len(newline + "(" + args + ")") > 72:
+				newline = (newline + "(" +
+							("\n"+self.create_indent(level+1)).join(arglist)
+							+ ")")
+			else:
+				newline = newline + "(" + " ".join(arglist) + ")"
 		return newline
 
 #if __name__ == "__main__":

@@ -81,7 +81,8 @@ class App:
 			print "Error parsing file: UnclosedChildBlockError"
 			return None
 
-		formatter = cmakescript.CMakeFormatter(parser.parsetree)
+		#formatter = cmakescript.CMakeFormatter(parser.parsetree)
+		formatter = cmakescript.NiceFormatter(parser.parsetree)
 		return formatter.output_as_cmake()
 
 	def runMergeTool(self, filename, formatted):
