@@ -73,7 +73,7 @@ class VisitorRemoveRedundantConditions(CMakeVisitor):
 	_reFuncs = (r"(?ix)" +		# case-insensitive and verbose
 						r"(?P<RedundantConditionFuncs>" +
 						"|".join(funcs) +
-						r")")
+						r")$")
 	reFuncs = re.compile(_reFuncs)
 	def visit_statement(self, statement):
 		if self.reFuncs.match(statement.func):

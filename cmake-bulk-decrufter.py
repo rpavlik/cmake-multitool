@@ -69,9 +69,9 @@ class App:
 				# A trailing newline
 				output = output + "\n"
 				self.runMergeTool(infile, output)
-				if self.mergetool is not None and len(inputfiles) > 1:
+				#if self.mergetool is not None and len(inputfiles) > 1:
 
-					x = raw_input("Press enter to continue to the next file")
+				#	x = raw_input("Press enter to continue to the next file")
 
 
 	def processFile(self, filename):
