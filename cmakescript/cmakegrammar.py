@@ -107,7 +107,7 @@ _reMLCommandStart = ( r"^\s*(?P<MLStart>"	# start the multi line bool group
 
 
 ## The middle/end of a multiline command
-_reMLCommandStart = ( r"^\s*(?P<MLMiddle>"	# start the multi line bool group
+_reMLCommandMiddle = ( r"^\s*(?P<MLMiddle>"	# start the multi line bool group
 			+ r"\s*"
 			+ r"(?P<MLArgs>"
 			+ r"("
