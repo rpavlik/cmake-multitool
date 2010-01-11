@@ -34,6 +34,7 @@ class AllRegexesCompilable(unittest.TestCase):
 						if re.match("_re", varname)	]
 
 		for reStr in regexStrings:
+			print reStr
 			re.compile(reStr)
 
 
@@ -134,7 +135,7 @@ class AcceptRejectArgument(unittest.TestCase):
 					 argument"''')
 		for item in data:
 			print item
-			print re.match(cmakegrammar._reArg + "$", item)
+			self.assertNotEqual(re.match(cmakegrammar._reArg + "$", item), None)
 
 	def testRejectInvalidArg(self):
 		"""Reject an invalid argument with re.match"""
@@ -144,7 +145,7 @@ class AcceptRejectArgument(unittest.TestCase):
 					r"anarg\"withquote",
 					r'"quoted" args"' )
 		for item in data:
-			print str(item)
+			print item
 			self.assertEqual(re.match(cmakegrammar._reArg + "$", item), None)
 
 	def testSplitArgs(self):
@@ -160,6 +161,23 @@ class AcceptRejectArgument(unittest.TestCase):
 			print item
 			print re.findall(cmakegrammar._reArg, item)
 			self.assertEqual(len(re.findall(cmakegrammar._reArg, item)), number)
+
+
+class HandleMLCommands(unittest.TestCase):
+	def testStartMultiLine(self):
+		"""Split valid arguments"""
+		data = (	r"command(arg ",
+					r"command( #whatever",
+					r"command( more_args1",
+					r"command(1arg 1 #whatever",
+					r'business(anarg\"withquote another',
+					r'magic("quoted\" arg" PIE #food',
+					r'''command("this is a long
+					 argument" another''')
+		for item in data:
+			print item
+			print re.match(cmakegrammar._reMLCommandStart, item)
+			self.assertNotEqual(re.match(cmakegrammar._reMLCommandStart, item), None)
 
 
 ## Requirement:

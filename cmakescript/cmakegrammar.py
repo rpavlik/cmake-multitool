@@ -69,11 +69,14 @@ _reFuncName = r"(?x) (?P<FuncName> [\w\d]+)"
 ## Extremely general "non-empty arguments," no leading or trailing whitespc
 _reArgs = r"(?x) (?P<Args> (\S ((\s)*\S)*))"
 
+## A given single valid argument
 _reArg = r"""(?x) (
 			(?:\\.|[^"'\s])+|	# anything that's a single word
 			"(?:\\.|[^"\\])+"|	# anything double-quoted
 			'(?:\\.|[^'\\])+')		# anything single-quoted
 			"""
+
+
 
 ## Standard command args: no parens permitted
 #_reArgsStd = r"(?x) \s* (?P<ArgsStd> ([\S-\(\)]([\S-\(\)]|\s[\S-\(\)])* )?) \s*"
@@ -105,8 +108,23 @@ _reFullLine = ( r"^\s*(?P<FullLine>"	# start the full line bool group
 			+ _reComment
 			+ r")?" 		# end optional comment group
 			+ r")\s*$")		# end the full line bool group
-##
-####
+
+## The start of a multiline command
+_reMLCommandStart = ( r"^\s*(?P<MLStart>"	# start the multi line bool group
+			+ _reCommandStart
+			+ r"\s*"
+			+ r"(?P<MLArgs>"
+			+ r"("
+			+ _reArg
+			+ r")*)"
+			+ r"\s*"
+			+ r"(?P<MLComment>"			# start optional comment group
+			+ _reComment
+			+ r")?)\s*$" 		# end optional comment group
+
+
+
+)
 
 ## Regex matching all the functions that permit parens in their args
 #reParenArgFuncs = re.compile("^" + _parenArgFuncs + "$",
