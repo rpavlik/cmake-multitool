@@ -15,6 +15,7 @@ import re
 import os
 import glob
 
+
 ###
 # third-party packages
 # - none
@@ -121,21 +122,22 @@ class KnownParses(unittest.TestCase):
 			formatted = formatter.output_as_cmake()
 			self.assertEqual(cmakeparser.parse_string(formatted).parsetree, parsedstrings[key])
 
-class WildModules(unittest.TestCase):
-	def setUp(self):
-		basedir = os.path.split(__file__)[0] + '/testdata/WildModules'
-		self.modules = findcmakescripts.find_cmake_scripts(basedir)
 
-	def testWildModuleParsesRoundtrip(self):
-		for filename in self.modules:
-
-			try:
-				parser = cmakeparser.parse_file(filename)
-			except:
-				continue
-			formatter = cmakeformatter.CMakeFormatter(parser.parsetree)
-			formatted = formatter.output_as_cmake()
-			self.assertEqual(cmakeparser.parse_string(formatted).parsetree, parser.parsetree)
+#class WildModules(unittest.TestCase):
+#	def setUp(self):
+#		basedir = os.path.split(__file__)[0] + '/testdata/WildModules'
+#		self.modules = findcmakescripts.find_cmake_scripts(basedir)
+#
+#	def testWildModuleParsesRoundtrip(self):
+#		for filename in self.modules:
+#
+#			try:
+#				parser = cmakeparser.parse_file(filename)
+#			except:
+#				continue
+#			formatter = cmakeformatter.CMakeFormatter(parser.parsetree)
+#			formatted = formatter.output_as_cmake()
+#			self.assertEqual(cmakeparser.parse_string(formatted).parsetree, parser.parsetree)
 
 
 if __name__=="__main__":

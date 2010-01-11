@@ -52,7 +52,7 @@ _reFuncName = r"(?x) (?P<FuncName> [\w\d]+)"
 _reArgs = r"(?x) (?P<Args> (\S ((\s)*\S)*))"
 
 ## A given single valid argument
-_reArg = r"""(?x) (
+_reArg = r"""(?x) (?:
 			(?:\\.|[^"'\s])+|	# anything that's a single word
 			"(?:\\.|[^"\\])*"|	# anything double-quoted
 			'(?:\\.|[^'\\])*')		# anything single-quoted
@@ -66,7 +66,7 @@ _reArg = r"""(?x) (
 ## A comment: everything after # as long as it's not preceded by a \
 # the ?<! is a "negative backward assertion handling "not after a \"
 # (?<!\\)
-_reComment = r"(?x) (?P<Comment> (?<!\\)\#(\s*\S+)*)"
+_reComment = r"(?x) (?P<Comment> (?<!\\)\#(?:\s*\S+)*)"
 
 ## The start of a command, up until the arguments
 _reCommandStart = _reFuncName + r"\s* \("
@@ -93,33 +93,81 @@ _reFullLine = ( r"^\s*(?P<FullLine>"	# start the full line bool group
 
 ## The start of a multiline command
 _reMLCommandStart = ( r"^\s*(?P<MLStart>"	# start the multi line bool group
-			+ _reCommandStart
-			+ r"\s*"
-			+ r"(?P<MLArgs>"
-			+ r"("
+			+ _reFuncName
+			+ r"""
+			\s* \(
+			\s*
+			(?P<MLArgs>
+			"""
 			+ _reArg
-			+ r")*)"
-			+ r"\s*"
-			+ r"(?P<MLComment>"			# start optional comment group
+			+ r"""
+			(\s+
+			"""
+			+ _reArg
+			+ r"""
+			)*)?
+			
+			\s*
+			(?P<MLComment>	# start optional comment group
+			"""
 			+ _reComment
-			+ r")?)\s*$" 		# end optional comment group
+			+ r"""
+			)?)\s*$ 		# end optional comment group
+			"""
 			)
 
 
+## RE to reprocess the args from a ML command
+#_reMLArgsLine = ( r"^\s*(?P<MLArgs>(?:"
+#			+ _reArg
+#			+ r"""\s*)*)
+#			\s*
+#			(?P<MLComment>	# start optional comment group
+#			"""
+#			+ _reComment
+#			+ r"""
+#			)?\s*$ 		# end optional comment group
+#			"""
+#			)
+
+## RE to reprocess the args from a ML command
+_reMLArgsLine = ( r"(?mx)^\s*(?P<MLArgs>(?:"
+			+ _reArg
+			+ r"""\s*)*)
+			\s*
+			(?P<MLComment>(	# start optional comment group
+			"""
+			+ _reComment
+			+ r"""
+			)?)\s*$ 		# end optional comment group
+			"""
+			)
+
+_reMLChunk = ( r"(?mx)(" + _reArg + "|" + _reComment + ")")
+
 ## The middle/end of a multiline command
 _reMLCommandMiddle = ( r"^\s*(?P<MLMiddle>"	# start the multi line bool group
-			+ r"\s*"
-			+ r"(?P<MLArgs>"
-			+ r"("
+			+ r"""
+			\s*
+			(?P<MLArgs>
+			"""
 			+ _reArg
-			+ r")*)"
-			+ r"(?P<MLEndCommand>"
-			+ _reCommandEnd
-			+ ")?"
-			+ r"\s*"
-			+ r"(?P<MLComment>"			# start optional comment group
+			+ r"""
+			(\s+
+			"""
+			+ _reArg
+			+ r"""
+			)*)?
+			(?P<MLCommandEnd>
+			(\s*\))?
+			)
+			\s*
+			(?P<MLComment>	# start optional comment group
+			"""
 			+ _reComment
-			+ r")?)\s*$" 		# end optional comment group
+			+ r"""
+			)?)\s*$ 		# end optional comment group
+			"""
 			)
 
 ## Regex matching all the functions that permit parens in their args
@@ -181,12 +229,43 @@ def parse_line(line):
 		raise IncompleteStatementError
 
 	FuncName, Args, Comment = m.group("FuncName",
-										"Args", # todo change to argsCareful
-										"Comment")
-	#if re.search(r"\n", Args):
+					"Args", # todo change to argsCareful
+					"Comment")
+	
+	#reMLCommandStart = re.compile(_reMLCommandStart, re.MULTILINE | re.VERBOSE)
+	#reMLCommandMiddle = re.compile(_reMLCommandMiddle, re.MULTILINE | re.VERBOSE)
+	if Args is not None and re.search(r"\n", Args) is not None:
 		# This is multiline
-	#	pass
-
+		#match = reMLCommandStart.match(line)
+		#Args = match.group("MLArgs")
+		#Comment = match.group("MLComment")
+		#hasEnd = None
+		#while hasEnd is None:
+		#	match = reMLCommandMiddle.match(line, match.end())
+		#	Args = Args + "\n" + match.group("MLArgs")
+		#	Comment = Comment + "\n" +  match.group("MLComment")
+		#	hasEnd = match.group("MLCommandEnd")
+		units = re.findall(_reMLChunk, Args)
+		print "Args:", Args
+		print "Units: ", units
+		MLArgs = []
+		MLComment = []
+		for unit in units:
+			if re.match(_reComment, unit[0]):
+				MLComment.append(unit[0])
+			elif re.match(_reArg, unit[0]):
+				MLArgs.append(unit[0])
+				
+			#match = re.match(_reMLArgsLine, unit[0], re.MULTILINE | re.VERBOSE)
+			#MLArgs = MLArgs + "\n" + match.group("MLArgs")
+			#MLComment = MLComment + "\n" +  match.group("MLComment")
+		Args = " ".join(MLArgs)
+		if Comment is not None:
+			MLComment.append(Comment)
+		if len(MLComment) > 0:
+			Comment = "\n".join(MLComment)
+		else:
+			Comment = None
 	if FuncName is None:
 		FuncName = ""
 

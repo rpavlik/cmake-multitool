@@ -181,6 +181,7 @@ class HandleMLCommands(unittest.TestCase):
 		for item in data:
 			if re.match(cmakegrammar._reMLCommandStart, item) is None:
 				print item
+				print cmakegrammar._reMLCommandStart
 			self.assertNotEqual(re.match(cmakegrammar._reMLCommandStart, item), None)
 
 	def testRejectStartMultiLine(self):
@@ -212,7 +213,7 @@ class ParseCompleteLine(unittest.TestCase):
 					("func( arg arg )",	("func", "arg arg", None)),
 					("func( arg  ar )",	("func", "arg  ar", None)),
 					(r"func(\#notcmnt)",("func", r"\#notcmnt", None)),
-					("func(oh\nyes\nmultiline)", ("func", "oh\nyes\nmultiline", None))	)
+					("func(oh\nyes\nmultiline)", ("func", "oh yes multiline", None))	)
 
 	commentsOnly = (	"#",
 				"# comment",
@@ -223,7 +224,7 @@ class ParseCompleteLine(unittest.TestCase):
 
 	mixed = (	("func() # cmnt",	("func", None, "# cmnt")),
 			(r"func(\#notcmnt) #iscmnt",("func", r"\#notcmnt", "#iscmnt")),
-			("func(arg1 #comment\narg2)", ("func", "arg1\narg2", "#comment\n"))	)
+			("func(arg1 #comment\narg2)", ("func", "arg1 arg2", "#comment"))	)
 
 
 
