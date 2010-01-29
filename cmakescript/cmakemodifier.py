@@ -79,7 +79,45 @@ class VisitorRemoveRedundantConditions(CMakeVisitor):
 		if self.reFuncs.match(statement.func):
 			statement.args = None
 
-
+class VisitorFindModuleDependencies(CMakeVisitor):
+	def __init__(self):
+		CMakeVisitor.__init__(self)
+		self.findmodules = []
+		self.modules = []
+		self.optionalmodules = []
+		self.files = []
+		self.optionalfiles = []
+		self.directories = []
+	def visit_statement(self, statement):
+		if re.match(r"(?i)find_package$", statement.func):
+			args = grammar.split_args(statement.args)
+			if args[0]:
+				self.findmodules.append("Find"+args[0])
+		elif re.match(r"(?i)include$", statement.func):
+			args = grammar.split_args(statement.args)
+			if args[0]:
+				if re.search(r"(?i)[/.]", args[0]):
+					file = args[0]
+					module = None
+				else:
+					file = None
+					module = args[0]
+				if "OPTIONAL" in args:
+					self.optionalmodules.append(module)
+					self.optionalfiles.append(file)
+				else:
+					self.modules.append(module)
+					self.files.append(file)
+		elif re.match(r"(?i)add_subdirectory$", statement.func):
+			args = grammar.split_args(statement.args)
+			if args[0]:
+				self.directories.append(args[0])
+		self.findmodules = [x for x in self.findmodules if x is not None]
+		self.modules = [x for x in self.modules if x is not None]
+		self.optionalmodules = [x for x in self.optionalmodules if x is not None]
+		self.files = [x for x in self.files if x is not None]
+		self.optionalfiles = [x for x in self.optionalfiles if x is not None]
+		self.directories = [x for x in self.directories if x is not None]
 
 #if __name__ == "__main__":
 #	pass
