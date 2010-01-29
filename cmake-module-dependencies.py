@@ -17,7 +17,7 @@ from optparse import OptionParser
 
 ###
 # third-party packages
-import pydot
+import yapgvb	# GraphViz
 
 ###
 # internal packages
@@ -72,6 +72,9 @@ class App:
 		allmodules["system"] = [x.strip()
 								for x in t1.communicate()[0].splitlines()[1:]]
 
+		nodes = {}
+		edges = []
+
 		for key, val in allmodules.iteritems():
 			findmodules[key] = [x
 								for x in allmodules[key]
@@ -79,7 +82,6 @@ class App:
 			othermodules[key] = [x
 								 for x in allmodules[key]
 								 if re.match(r"Find", x) is None]
-
 
 		for infile, number in zip(inputfiles, range(1, len(inputfiles)+1)):
 			print "------------------------"
@@ -89,7 +91,10 @@ class App:
 			visitor = self.processFile(infile)
 			shortname = os.path.relpath(infile)
 			pathto = os.path.split(shortname)[0]
+			
+
 			dependencies["findmodules"][shortname] = visitor.findmodules
+			dependencies["othermodules"][shortname] = visitor.modules
 			dependencies["othermodules"][shortname] = visitor.modules
 			dependencies["optionalmodules"][shortname] = visitor.optionalmodules
 			dependencies["files"][shortname] = [os.path.join(pathto, x)
