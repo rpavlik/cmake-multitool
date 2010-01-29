@@ -34,7 +34,12 @@ class MergeTool:
 						"--diff",
 						"{L}",
 						"{C}",
-						"{R}"] }
+						"{R}"],
+					"diffuse"	:	[
+						"diffuse",
+						"{L}",
+						"{C}",
+						"{R}"]}
 
 	def __init__(self, tool):
 		self.tool = self.mergetools[tool]
