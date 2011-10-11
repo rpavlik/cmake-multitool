@@ -64,6 +64,15 @@ class CMakeStatement():
 		else:
 			return [(self.func, self.args, self.comment, self.children.get() )]
 
+	def replace_with_statements(self, statements):
+		if self.func is not None:
+			if self.comment is not None:
+				statements.insert(0, ("", None, self.comment, None))
+			self.func = None
+			self.args = None
+			self.comment = None
+		self.children = CMakeBlock(statements)
+
 	def accept(self, visitor):
 		visitor.visit_statement(self)
 		if self.children is not None:
