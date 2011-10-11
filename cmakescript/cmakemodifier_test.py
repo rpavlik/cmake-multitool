@@ -67,8 +67,8 @@ def setUp():
 
 
 ## Requirement:
-## A given source file/string has only valid one parse
-class SubdirsReplace(unittest.TestCase):
+## A given input parse has only one expected output parse
+class ExpectedCleanup(unittest.TestCase):
 
 	subtest = ""
 
@@ -76,18 +76,15 @@ class SubdirsReplace(unittest.TestCase):
 		def _exc_info(self):
 			print "Subtest info:"
 			print self.subtest
-			return super(SubdirsReplace, self)._exc_info()
+			return super(ExpectedCleanup, self)._exc_info()
 
 	def testApplyVisitor(self):
 		"""passing in a known-good parse with subdirs and checking the result"""
 		for key in inputparse.keys():
 			inparse = inputparse[key]
 			expected = expectedoutput[key]
-			self.subtest = inparse
-			tree = cmakemodifier.CMakeBlock(inparse)
-			tree.accept(cmakemodifier.VisitorReplaceSubdirs())
-			out = tree.get()
-			self.assertEqual(out, expected)
+			self.subtest = key
+			self.assertEqual(cmakemodifier.apply_all_cleanup_visitors(inparse), expected)
 
 if __name__=="__main__":
 	## Run tests if executed directly
