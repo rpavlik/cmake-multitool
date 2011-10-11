@@ -61,11 +61,11 @@ def setUp():
 		assert cbase == pbase
 
 		cmakef = open(cmakefn, 'r')
-		cmakestr = cmakef.read()
+		cmakestr = cmakef.read().strip()
 		cmakef.close()
 
 		parsef = open(parsefn, 'r')
-		parsestr = parsef.read()
+		parsestr = parsef.read().strip()
 		parsef.close()
 
 		parsedata = eval(parsestr)
@@ -91,8 +91,8 @@ def setUp():
 		parsedfiles[cbase] = parsedata
 		parsedstrings[cbase] = parsedata
 
-		parseduppers[cbase] = parseupper
-		parsedlowers[cbase] = parselower
+		parseduppers[cbase] = eval(parseupper)
+		parsedlowers[cbase] = eval(parselower)
 
 	dataKeys = inputfiles.keys()
 
