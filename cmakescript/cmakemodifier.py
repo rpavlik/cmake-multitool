@@ -154,5 +154,12 @@ class VisitorFindModuleDependencies(CMakeVisitor):
 		self.optionalfiles = [x for x in self.optionalfiles if x is not None]
 		self.directories = [x for x in self.directories if x is not None]
 
+
+def apply_all_cleanup_visitors(tree):
+	rootBlock = cmakescript.CMakeBlock(tree)
+	rootBlock.accept(VisitorRemoveRedundantConditions())
+	rootBlock.accept(VisitorReplaceSubdirs())
+	return rootBlock.get()
+
 #if __name__ == "__main__":
 #	pass
