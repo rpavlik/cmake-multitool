@@ -156,7 +156,7 @@ class VisitorFindModuleDependencies(CMakeVisitor):
 
 
 def apply_all_cleanup_visitors(tree):
-	rootBlock = cmakescript.CMakeBlock(tree)
+	rootBlock = CMakeBlock(tree)
 	rootBlock.accept(VisitorRemoveRedundantConditions())
 	rootBlock.accept(VisitorReplaceSubdirs())
 	return rootBlock.get()
