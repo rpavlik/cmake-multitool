@@ -48,6 +48,10 @@ class CMakeFormatter():
 	def output_statement(self, statement, level):
 
 		func, args, comment, children = statement
+		if func == None:
+			# Allow visitors to replace one line with multiple lines
+			# by making a None function have children.
+			return self.output_block(children, level)
 
 		if func == "" and comment is None:
 			thisline = ""

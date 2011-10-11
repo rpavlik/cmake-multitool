@@ -35,7 +35,10 @@ class CMakeBlock():
 		return repr([repr(x) for x in self.data])
 
 	def get(self):
-		return [x.get() for x in self.data]
+		output = []
+		for x in self.data:
+			output.extend(x.get())
+		return output
 
 	def accept(self, visitor):
 		visitor.visit_block(self)
@@ -54,10 +57,13 @@ class CMakeStatement():
 		return repr( (self.func, self.args, self.comment, repr(self.children) ))
 
 	def get(self):
-		if self.children is None:
-			return (self.func, self.args, self.comment, None )
+		if self.func is None:
+			return self.children.get()
+		elif self.children is None:
+			return [(self.func, self.args, self.comment, None )]
 		else:
-			return (self.func, self.args, self.comment, self.children.get() )
+			return [(self.func, self.args, self.comment, self.children.get() )]
+
 	def accept(self, visitor):
 		visitor.visit_statement(self)
 		if self.children is not None:
