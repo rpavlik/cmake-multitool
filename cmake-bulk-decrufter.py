@@ -90,9 +90,9 @@ class App:
 			return None
 
 		#formatter = cmakescript.CMakeFormatter(parser.parsetree)
-		visitor = cmakescript.VisitorRemoveRedundantConditions()
 		tree = cmakescript.CMakeBlock(parser.parsetree)
-		tree.accept(visitor)
+		tree.accept(cmakescript.VisitorRemoveRedundantConditions())
+		tree.accept(cmakescript.VisitorReplaceSubdirs())
 		formatter = cmakescript.NiceFormatter(tree.get())
 		return formatter.output_as_cmake()
 
