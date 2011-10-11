@@ -99,6 +99,21 @@ class VisitorRemoveRedundantConditions(CMakeVisitor):
 		if self.reFuncs.match(statement.func):
 			statement.args = None
 
+class VisitorReplaceSubdirs(CMakeVisitor):
+	funcs = ["subdirs"]
+	_reFuncs = (r"(?ix)" +		# case-insensitive and verbose
+						r"(?P<SubdirsFuncs>" +
+						"|".join(funcs) +
+						r")$")
+	reFuncs = re.compile(_reFuncs)
+	def visit_statement(self, statement):
+		if self.reFuncs.match(statement.func):
+			args = grammar.split_args(statement.args)
+			if len(args) == 1:
+				statement.func = "add_subdirectory"
+			else:
+				statement.replace_with_statements([("add_subdirectory", x, None, None) for x in args ])
+
 class VisitorFindModuleDependencies(CMakeVisitor):
 	def __init__(self):
 		CMakeVisitor.__init__(self)
