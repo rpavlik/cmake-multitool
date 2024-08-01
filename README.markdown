@@ -2,12 +2,16 @@ CMake Multi-Tool
 ==================
 <https://github.com/rpavlik/cmake-multitool>
 
-Ryan Pavlik
+Rylie Pavlik
 
-<rpavlik@iastate.edu> <abiryan@ryand.net>
-<http://academic.cleardefinition.com>
+## Project Status
 
-Iowa State University HCI Graduate Program/VRAC
+This worked to some degree when I last used it.
+However, I have moved on, no longer use this, and have no capacity to meaningfully maintain it.
+
+cmakelang/cmake-format is a better option.
+
+**Unmaintained**
 
 Introduction
 ------------
